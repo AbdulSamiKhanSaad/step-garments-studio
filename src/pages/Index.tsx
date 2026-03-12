@@ -1,14 +1,29 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import Navbar from "@/components/Navbar";
+import HeroSlider from "@/components/HeroSlider";
+import StatsSection from "@/components/StatsSection";
+import ServicesPreview from "@/components/ServicesPreview";
+import ProductsPreview from "@/components/ProductsPreview";
+import ClientsSection from "@/components/ClientsSection";
+import PromoBanner from "@/components/PromoBanner";
+import Footer from "@/components/Footer";
+import heroFactory from "@/assets/hero-factory.jpg";
+import heroFashion from "@/assets/hero-fashion.jpg";
+import heroLabels from "@/assets/hero-labels.jpg";
+import serviceShipping from "@/assets/service-shipping.jpg";
 
-const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
-};
+const Index = () => (
+  <div className="min-h-screen">
+    <Navbar />
+    <HeroSlider />
+    <StatsSection />
+    <ServicesPreview />
+    <PromoBanner headline="Launch Your Clothing Brand Today" image={heroFashion} cta="Start Now" />
+    <ProductsPreview />
+    <PromoBanner headline="From Idea to Global Delivery" image={serviceShipping} cta="Learn More" link="/process" />
+    <ClientsSection />
+    <PromoBanner headline="Custom Manufacturing for Growing Brands" image={heroLabels} cta="Request a Quote" />
+    <Footer />
+  </div>
+);
 
 export default Index;
