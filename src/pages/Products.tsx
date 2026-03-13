@@ -1,8 +1,9 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PromoBanner from "@/components/PromoBanner";
 import ProductGallery from "@/components/ProductGallery";
+import ProductFilters from "@/components/ProductFilters";
 import QuoteModal from "@/components/QuoteModal";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -63,6 +64,22 @@ const Products = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState("");
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [fabricFilter, setFabricFilter] = useState("All Fabrics");
+  const [moqFilter, setMoqFilter] = useState("Any MOQ");
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const searchLower = search.toLowerCase();
+      const matchesSearch = !search || p.name.toLowerCase().includes(searchLower) || p.desc.toLowerCase().includes(searchLower) || p.fabrics.some(f => f.toLowerCase().includes(searchLower));
+      const matchesCategory = categoryFilter === "All" || p.name.toLowerCase().includes(categoryFilter.toLowerCase()) || p.id.toLowerCase().includes(categoryFilter.toLowerCase().replace(/\s/g, ""));
+      const matchesFabric = fabricFilter === "All Fabrics" || p.fabrics.some(f => f.toLowerCase().includes(fabricFilter.toLowerCase()));
+      const moqNum = parseInt(p.moq);
+      const matchesMoq = moqFilter === "Any MOQ" || moqNum >= parseInt(moqFilter);
+      return matchesSearch && matchesCategory && matchesFabric && matchesMoq;
+    });
+  }, [search, categoryFilter, fabricFilter, moqFilter]);
 
   const scrollCarousel = (dir: number) => {
     scrollRef.current?.scrollBy({ left: dir * 260, behavior: "smooth" });
@@ -134,11 +151,27 @@ const Products = () => {
         </div>
       </section>
 
-      {/* Product Grid */}
+      {/* Search/Filter Bar + Product Grid */}
       <section className="section-padding bg-background">
         <div className="container-max">
+          <div className="mb-8">
+            <ProductFilters
+              search={search} onSearchChange={setSearch}
+              category={categoryFilter} onCategoryChange={setCategoryFilter}
+              fabric={fabricFilter} onFabricChange={setFabricFilter}
+              moq={moqFilter} onMoqChange={setMoqFilter}
+            />
+          </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-muted-foreground text-lg">No products match your filters.</p>
+              <button onClick={() => { setSearch(""); setCategoryFilter("All"); setFabricFilter("All Fabrics"); setMoqFilter("Any MOQ"); }} className="btn-primary mt-4 text-sm">Clear Filters</button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <div
                 key={product.id}
                 id={product.id}
