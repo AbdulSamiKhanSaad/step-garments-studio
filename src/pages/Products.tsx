@@ -64,6 +64,22 @@ const Products = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState("");
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [fabricFilter, setFabricFilter] = useState("All Fabrics");
+  const [moqFilter, setMoqFilter] = useState("Any MOQ");
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const searchLower = search.toLowerCase();
+      const matchesSearch = !search || p.name.toLowerCase().includes(searchLower) || p.desc.toLowerCase().includes(searchLower) || p.fabrics.some(f => f.toLowerCase().includes(searchLower));
+      const matchesCategory = categoryFilter === "All" || p.name.toLowerCase().includes(categoryFilter.toLowerCase()) || p.id.toLowerCase().includes(categoryFilter.toLowerCase().replace(/\s/g, ""));
+      const matchesFabric = fabricFilter === "All Fabrics" || p.fabrics.some(f => f.toLowerCase().includes(fabricFilter.toLowerCase()));
+      const moqNum = parseInt(p.moq);
+      const matchesMoq = moqFilter === "Any MOQ" || moqNum >= parseInt(moqFilter);
+      return matchesSearch && matchesCategory && matchesFabric && matchesMoq;
+    });
+  }, [search, categoryFilter, fabricFilter, moqFilter]);
 
   const scrollCarousel = (dir: number) => {
     scrollRef.current?.scrollBy({ left: dir * 260, behavior: "smooth" });
