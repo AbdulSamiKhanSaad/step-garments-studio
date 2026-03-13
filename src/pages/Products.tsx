@@ -1,18 +1,22 @@
+import { useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PromoBanner from "@/components/PromoBanner";
 import ProductGallery from "@/components/ProductGallery";
-import { Link } from "react-router-dom";
+import QuoteModal from "@/components/QuoteModal";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
 import productTshirts from "@/assets/product-tshirts.jpg";
 import productHoodies from "@/assets/product-hoodies.jpg";
 import productSportswear from "@/assets/product-sportswear.jpg";
 import productDenim from "@/assets/product-denim.jpg";
 import productJackets from "@/assets/product-jackets.jpg";
 import productPolo from "@/assets/product-polo.jpg";
+import productTracksuits from "@/assets/product-tracksuits.jpg";
+import productStreetwear from "@/assets/product-streetwear.jpg";
 import serviceFabric from "@/assets/service-fabric.jpg";
 import heroFactory from "@/assets/hero-factory.jpg";
 
-// Gallery images
 import galleryTshirts2 from "@/assets/gallery-tshirts-2.jpg";
 import galleryTshirts3 from "@/assets/gallery-tshirts-3.jpg";
 import galleryHoodies2 from "@/assets/gallery-hoodies-2.jpg";
@@ -29,161 +33,173 @@ import galleryTracksuits2 from "@/assets/gallery-tracksuits-2.jpg";
 import galleryUniforms2 from "@/assets/gallery-uniforms-2.jpg";
 import galleryKidswear2 from "@/assets/gallery-kidswear-2.jpg";
 
-const categories = [
-  {
-    name: "T-Shirts",
-    image: productTshirts,
-    gallery: [productTshirts, galleryTshirts2, galleryTshirts3],
-    desc: "Premium custom t-shirts crafted from the finest cotton and blended fabrics. Perfect for streetwear, fashion brands, and promotional wear.",
-    fabrics: ["100% Cotton", "Cotton/Polyester Blend", "Organic Cotton", "Tri-Blend", "Ring-Spun Cotton"],
-    customization: ["Screen Printing", "DTG Printing", "Embroidery", "Custom Labels", "Custom Packaging"],
-    moq: "200 pieces per style/color",
-  },
-  {
-    name: "Hoodies & Sweatshirts",
-    image: productHoodies,
-    gallery: [productHoodies, galleryHoodies2, galleryHoodies3],
-    desc: "High-quality hoodies and sweatshirts with premium fleece lining. Ideal for streetwear brands, athleisure lines, and corporate merchandise.",
-    fabrics: ["French Terry", "Fleece", "Cotton/Polyester", "Organic Cotton Fleece", "Performance Blend"],
-    customization: ["Embroidery", "Screen Print", "Puff Print", "Custom Zipper Pulls", "Woven Labels"],
-    moq: "150 pieces per style/color",
-  },
-  {
-    name: "Sportswear & Activewear",
-    image: productSportswear,
-    gallery: [productSportswear, gallerySportswear2, gallerySportswear3],
-    desc: "Performance-driven sportswear and activewear engineered for comfort and durability. Moisture-wicking, breathable, and stylish.",
-    fabrics: ["Dri-Fit Polyester", "Spandex Blend", "Nylon Mesh", "Compression Fabric", "Bamboo Blend"],
-    customization: ["Sublimation Print", "Heat Transfer", "Reflective Details", "Custom Elastic Bands", "Performance Labels"],
-    moq: "200 pieces per style/color",
-  },
-  {
-    name: "Denim",
-    image: productDenim,
-    gallery: [productDenim, galleryDenim2, galleryDenim3],
-    desc: "Premium denim jeans and jackets with expert washes, distressing, and finishing. From raw selvedge to stretch denim.",
-    fabrics: ["Raw Denim", "Stretch Denim", "Selvedge", "Organic Denim", "Recycled Denim"],
-    customization: ["Custom Washes", "Distressing", "Embroidery", "Leather Patches", "Custom Rivets"],
-    moq: "300 pieces per style/color",
-  },
-  {
-    name: "Jackets & Outerwear",
-    image: productJackets,
-    gallery: [productJackets, galleryJackets2, galleryJackets3],
-    desc: "From bomber jackets to windbreakers, we manufacture premium outerwear with expert construction and finishing.",
-    fabrics: ["Nylon", "Polyester Shell", "Cotton Canvas", "Faux Leather", "Waterproof Membrane"],
-    customization: ["Embroidery", "Patches", "Custom Lining", "Custom Zippers", "Branded Snaps"],
-    moq: "100 pieces per style/color",
-  },
-  {
-    name: "Polo Shirts",
-    image: productPolo,
-    gallery: [productPolo, galleryPolo2, galleryPolo3],
-    desc: "Classic and modern polo shirts for corporate wear, golf brands, and fashion labels. Premium piqué and performance fabrics.",
-    fabrics: ["Piqué Cotton", "Performance Polyester", "Cotton/Lycra", "Organic Cotton", "CoolMax"],
-    customization: ["Embroidery", "Tipping Customization", "Custom Buttons", "Woven Labels", "Tone-on-Tone Print"],
-    moq: "200 pieces per style/color",
-  },
-  {
-    name: "Tracksuits",
-    image: productSportswear,
-    gallery: [productSportswear, galleryTracksuits2, gallerySportswear2],
-    desc: "Complete tracksuit sets with matching jackets and pants. Perfect for athletic brands, streetwear, and corporate teams.",
-    fabrics: ["French Terry", "Tricot", "Velour", "Performance Blend", "Cotton Fleece"],
-    customization: ["Embroidery", "Screen Print", "Custom Piping", "Custom Zipper Pulls", "Side Stripe Options"],
-    moq: "150 sets per style/color",
-  },
-  {
-    name: "Corporate Uniforms",
-    image: productPolo,
-    gallery: [productPolo, galleryUniforms2, galleryPolo2],
-    desc: "Professional uniforms for hospitality, healthcare, corporate, and industrial sectors. Durable, comfortable, and brand-aligned.",
-    fabrics: ["Poly/Cotton Twill", "Performance Polyester", "Stretch Poplin", "Wrinkle-Free Blend", "Antimicrobial Fabric"],
-    customization: ["Logo Embroidery", "Name Tags", "Custom Pockets", "Reflective Strips", "Department Color Coding"],
-    moq: "100 pieces per style/color",
-  },
-  {
-    name: "Kids Wear",
-    image: productTshirts,
-    gallery: [productTshirts, galleryKidswear2, galleryTshirts2],
-    desc: "Safe, comfortable, and stylish children's clothing. All fabrics meet international safety standards for children's garments.",
-    fabrics: ["100% Organic Cotton", "BCI Cotton", "Bamboo Blend", "Hypoallergenic Polyester", "Soft Jersey"],
-    customization: ["Screen Print", "Appliqué", "Embroidery", "Custom Labels", "Snap Buttons"],
-    moq: "300 pieces per style/color",
-  },
+// Category carousel data
+const categoryNav = [
+  { name: "T-Shirts", image: productTshirts, id: "tshirts" },
+  { name: "Hoodies", image: productHoodies, id: "hoodies" },
+  { name: "Tracksuits", image: productTracksuits, id: "tracksuits" },
+  { name: "Jackets", image: productJackets, id: "jackets" },
+  { name: "Sportswear", image: productSportswear, id: "sportswear" },
+  { name: "Streetwear", image: productStreetwear, id: "streetwear" },
+  { name: "Denim", image: productDenim, id: "denim" },
+  { name: "Polo Shirts", image: productPolo, id: "polo" },
 ];
 
-const Products = () => (
-  <div className="min-h-screen">
-    <Navbar />
-    {/* Hero */}
-    <section className="relative h-[400px] sm:h-[500px] overflow-hidden">
-      <img src={heroFactory} alt="Products" className="absolute inset-0 w-full h-full object-cover" />
-      <div className="gradient-overlay" />
-      <div className="relative z-10 flex items-center justify-center h-full text-center px-4">
-        <div>
-          <p className="text-accent font-semibold text-sm uppercase tracking-widest mb-3">Our Products</p>
-          <h1 className="heading-xl text-primary-foreground">Premium Apparel Categories</h1>
-          <p className="mt-4 text-primary-foreground/80 text-lg max-w-2xl mx-auto">
-            Manufacturing excellence across every garment category for brands worldwide.
-          </p>
-        </div>
-      </div>
-    </section>
+// Product cards for the grid
+const products = [
+  { id: "tshirts", name: "Premium T-Shirts", image: productTshirts, gallery: [productTshirts, galleryTshirts2, galleryTshirts3], desc: "Custom t-shirts crafted from the finest cotton and blended fabrics. Perfect for streetwear, fashion brands, and promotional wear.", fabrics: ["100% Cotton", "Cotton/Polyester Blend", "Organic Cotton", "Tri-Blend"], customization: ["Screen Printing", "DTG Printing", "Embroidery", "Custom Labels"], moq: "200 pcs" },
+  { id: "hoodies", name: "Hoodies & Sweatshirts", image: productHoodies, gallery: [productHoodies, galleryHoodies2, galleryHoodies3], desc: "High-quality hoodies with premium fleece lining. Ideal for streetwear brands, athleisure lines, and corporate merchandise.", fabrics: ["French Terry", "Fleece", "Cotton/Polyester", "Organic Cotton Fleece"], customization: ["Embroidery", "Screen Print", "Puff Print", "Custom Zipper Pulls"], moq: "150 pcs" },
+  { id: "tracksuits", name: "Tracksuits", image: productTracksuits, gallery: [productTracksuits, galleryTracksuits2, gallerySportswear2], desc: "Complete tracksuit sets with matching jackets and pants. Perfect for athletic brands, streetwear, and corporate teams.", fabrics: ["French Terry", "Tricot", "Velour", "Performance Blend"], customization: ["Embroidery", "Screen Print", "Custom Piping", "Side Stripe Options"], moq: "150 sets" },
+  { id: "jackets", name: "Jackets & Outerwear", image: productJackets, gallery: [productJackets, galleryJackets2, galleryJackets3], desc: "From bomber jackets to windbreakers, premium outerwear with expert construction and finishing.", fabrics: ["Nylon", "Polyester Shell", "Cotton Canvas", "Faux Leather"], customization: ["Embroidery", "Patches", "Custom Lining", "Custom Zippers"], moq: "100 pcs" },
+  { id: "sportswear", name: "Sportswear & Activewear", image: productSportswear, gallery: [productSportswear, gallerySportswear2, gallerySportswear3], desc: "Performance-driven sportswear engineered for comfort and durability. Moisture-wicking, breathable, and stylish.", fabrics: ["Dri-Fit Polyester", "Spandex Blend", "Nylon Mesh", "Compression Fabric"], customization: ["Sublimation Print", "Heat Transfer", "Reflective Details", "Performance Labels"], moq: "200 pcs" },
+  { id: "streetwear", name: "Streetwear Collection", image: productStreetwear, gallery: [productStreetwear, galleryHoodies2, galleryTshirts2], desc: "Bold, trend-forward streetwear for urban fashion brands. Oversized fits, premium fabrics, and statement designs.", fabrics: ["Heavy Cotton", "French Terry", "Distressed Denim", "Washed Fleece"], customization: ["Screen Print", "Puff Print", "Embroidery", "Vintage Wash"], moq: "200 pcs" },
+  { id: "denim", name: "Premium Denim", image: productDenim, gallery: [productDenim, galleryDenim2, galleryDenim3], desc: "Premium denim jeans and jackets with expert washes, distressing, and finishing. From raw selvedge to stretch denim.", fabrics: ["Raw Denim", "Stretch Denim", "Selvedge", "Organic Denim"], customization: ["Custom Washes", "Distressing", "Embroidery", "Leather Patches"], moq: "300 pcs" },
+  { id: "polo", name: "Polo Shirts", image: productPolo, gallery: [productPolo, galleryPolo2, galleryPolo3], desc: "Classic and modern polo shirts for corporate wear, golf brands, and fashion labels. Premium piqué and performance fabrics.", fabrics: ["Piqué Cotton", "Performance Polyester", "Cotton/Lycra", "CoolMax"], customization: ["Embroidery", "Tipping Customization", "Custom Buttons", "Woven Labels"], moq: "200 pcs" },
+  { id: "uniforms", name: "Corporate Uniforms", image: productPolo, gallery: [productPolo, galleryUniforms2, galleryPolo2], desc: "Professional uniforms for hospitality, healthcare, corporate, and industrial sectors. Durable and brand-aligned.", fabrics: ["Poly/Cotton Twill", "Performance Polyester", "Stretch Poplin", "Antimicrobial"], customization: ["Logo Embroidery", "Name Tags", "Custom Pockets", "Reflective Strips"], moq: "100 pcs" },
+  { id: "kidswear", name: "Kids Wear", image: productTshirts, gallery: [productTshirts, galleryKidswear2, galleryTshirts2], desc: "Safe, comfortable, and stylish children's clothing. All fabrics meet international safety standards.", fabrics: ["100% Organic Cotton", "BCI Cotton", "Bamboo Blend", "Soft Jersey"], customization: ["Screen Print", "Appliqué", "Embroidery", "Snap Buttons"], moq: "300 pcs" },
+];
 
-    {/* Product Categories */}
-    {categories.map((cat, i) => (
-      <section key={cat.name} className={`section-padding ${i % 2 === 0 ? "bg-background" : "bg-secondary"}`}>
-        <div className="container-max">
-          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-start ${i % 2 !== 0 ? "lg:flex-row-reverse" : ""}`}>
-            <div className={`${i % 2 !== 0 ? "lg:order-2" : ""}`}>
-              <img src={cat.image} alt={cat.name} className="w-full rounded-lg shadow-xl aspect-square object-cover" loading="lazy" />
-              <ProductGallery images={cat.gallery} name={cat.name} />
-            </div>
-            <div className={`${i % 2 !== 0 ? "lg:order-1" : ""}`}>
-              <p className="text-accent font-semibold text-sm uppercase tracking-widest mb-2">Category</p>
-              <h2 className="heading-md text-foreground">{cat.name}</h2>
-              <p className="text-body text-muted-foreground mt-4">{cat.desc}</p>
+const Products = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState("");
 
-              <div className="mt-6">
-                <h4 className="font-heading font-semibold text-sm uppercase tracking-wide text-foreground mb-2">Fabric Options</h4>
-                <div className="flex flex-wrap gap-2">
-                  {cat.fabrics.map((f) => (
-                    <span key={f} className="px-3 py-1 bg-muted text-muted-foreground text-xs rounded-full font-medium">{f}</span>
-                  ))}
-                </div>
-              </div>
+  const scrollCarousel = (dir: number) => {
+    scrollRef.current?.scrollBy({ left: dir * 260, behavior: "smooth" });
+  };
 
-              <div className="mt-4">
-                <h4 className="font-heading font-semibold text-sm uppercase tracking-wide text-foreground mb-2">Customization</h4>
-                <div className="flex flex-wrap gap-2">
-                  {cat.customization.map((c) => (
-                    <span key={c} className="px-3 py-1 bg-accent/10 text-accent text-xs rounded-full font-medium">{c}</span>
-                  ))}
-                </div>
-              </div>
+  const scrollToCategory = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
-              <div className="mt-4 flex items-center gap-6 text-sm">
-                <div>
-                  <span className="font-semibold text-foreground">MOQ: </span>
-                  <span className="text-muted-foreground">{cat.moq}</span>
-                </div>
-                <div>
-                  <span className="font-semibold text-foreground">Export: </span>
-                  <span className="text-muted-foreground">Worldwide</span>
-                </div>
-              </div>
+  const openQuote = (productName: string) => {
+    setSelectedProduct(productName);
+    setQuoteOpen(true);
+  };
 
-              <Link to="/contact" className="btn-primary mt-6">Request Quote</Link>
-            </div>
+  return (
+    <div className="min-h-screen">
+      <Navbar />
+
+      {/* Hero */}
+      <section className="relative h-[340px] sm:h-[420px] overflow-hidden">
+        <img src={heroFactory} alt="Step Garments Products" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="gradient-overlay" />
+        <div className="relative z-10 flex items-center justify-center h-full text-center px-4">
+          <div>
+            <p className="text-accent font-semibold text-sm uppercase tracking-widest mb-3">Our Products</p>
+            <h1 className="heading-xl text-primary-foreground">Premium Apparel Collection</h1>
+            <p className="mt-4 text-primary-foreground/80 text-lg max-w-2xl mx-auto">
+              Manufacturing excellence across every garment category — from concept to delivery.
+            </p>
           </div>
         </div>
       </section>
-    ))}
 
-    <PromoBanner headline="Scalable Production for High-Volume Orders" image={serviceFabric} cta="Contact Us" />
-    <Footer />
-  </div>
-);
+      {/* Category Carousel */}
+      <section className="bg-secondary border-b border-border sticky top-16 sm:top-20 z-40">
+        <div className="container-max relative py-5 px-4 sm:px-6 lg:px-8">
+          <button
+            onClick={() => scrollCarousel(-1)}
+            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background shadow-md flex items-center justify-center text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <div
+            ref={scrollRef}
+            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-6"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {categoryNav.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => scrollToCategory(cat.id)}
+                className="flex-shrink-0 group text-center"
+              >
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-transparent group-hover:border-accent transition-colors mx-auto shadow-md">
+                  <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                </div>
+                <span className="block mt-2 text-xs sm:text-sm font-semibold text-foreground group-hover:text-accent transition-colors whitespace-nowrap">
+                  {cat.name}
+                </span>
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => scrollCarousel(1)}
+            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background shadow-md flex items-center justify-center text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </section>
+
+      {/* Product Grid */}
+      <section className="section-padding bg-background">
+        <div className="container-max">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.map((product) => (
+              <div
+                key={product.id}
+                id={product.id}
+                className="group bg-card rounded-lg border border-border overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 scroll-mt-48"
+              >
+                {/* Image */}
+                <div className="relative aspect-square overflow-hidden">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <div className="absolute top-3 left-3">
+                    <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-semibold rounded-full uppercase tracking-wide">
+                      MOQ: {product.moq}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-5">
+                  <h3 className="font-heading text-lg font-bold text-foreground">{product.name}</h3>
+                  <p className="text-muted-foreground text-sm mt-1.5 line-clamp-2">{product.desc}</p>
+
+                  {/* Fabrics */}
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {product.fabrics.slice(0, 3).map((f) => (
+                      <span key={f} className="px-2 py-0.5 bg-muted text-muted-foreground text-[11px] rounded-full">{f}</span>
+                    ))}
+                    {product.fabrics.length > 3 && (
+                      <span className="px-2 py-0.5 bg-muted text-muted-foreground text-[11px] rounded-full">+{product.fabrics.length - 3}</span>
+                    )}
+                  </div>
+
+                  {/* Price */}
+                  <p className="mt-3 text-sm font-semibold text-accent">Contact for Price</p>
+
+                  {/* Gallery thumbnails */}
+                  <ProductGallery images={product.gallery} name={product.name} />
+
+                  {/* CTA */}
+                  <button
+                    onClick={() => openQuote(product.name)}
+                    className="btn-primary w-full mt-4 text-sm py-3"
+                  >
+                    Request Quote
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <PromoBanner headline="Scalable Production for High-Volume Orders" image={serviceFabric} cta="Contact Us" />
+      <Footer />
+
+      <QuoteModal open={quoteOpen} onOpenChange={setQuoteOpen} productName={selectedProduct} />
+    </div>
+  );
+};
 
 export default Products;
