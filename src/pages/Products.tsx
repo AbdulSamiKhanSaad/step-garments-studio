@@ -151,11 +151,27 @@ const Products = () => {
         </div>
       </section>
 
-      {/* Product Grid */}
+      {/* Search/Filter Bar + Product Grid */}
       <section className="section-padding bg-background">
         <div className="container-max">
+          <div className="mb-8">
+            <ProductFilters
+              search={search} onSearchChange={setSearch}
+              category={categoryFilter} onCategoryChange={setCategoryFilter}
+              fabric={fabricFilter} onFabricChange={setFabricFilter}
+              moq={moqFilter} onMoqChange={setMoqFilter}
+            />
+          </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-muted-foreground text-lg">No products match your filters.</p>
+              <button onClick={() => { setSearch(""); setCategoryFilter("All"); setFabricFilter("All Fabrics"); setMoqFilter("Any MOQ"); }} className="btn-primary mt-4 text-sm">Clear Filters</button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <div
                 key={product.id}
                 id={product.id}
