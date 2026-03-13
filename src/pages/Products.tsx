@@ -1,8 +1,9 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PromoBanner from "@/components/PromoBanner";
 import ProductGallery from "@/components/ProductGallery";
+import ProductFilters from "@/components/ProductFilters";
 import QuoteModal from "@/components/QuoteModal";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
