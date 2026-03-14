@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const links = [
   { label: "Home", path: "/" },
@@ -13,6 +14,7 @@ const links = [
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const { user, isAdmin } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-navy/95 backdrop-blur-md border-b border-border/10">
@@ -34,6 +36,17 @@ const Navbar = () => {
               {l.label}
             </Link>
           ))}
+          {user ? (
+            <Link to={isAdmin ? "/admin" : "/dashboard"} className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80 hover:text-accent transition-colors">
+              <User className="w-4 h-4" />
+              {isAdmin ? "Admin" : "Dashboard"}
+            </Link>
+          ) : (
+            <Link to="/auth" className="flex items-center gap-2 text-sm font-medium text-primary-foreground/80 hover:text-accent transition-colors">
+              <User className="w-4 h-4" />
+              Login
+            </Link>
+          )}
           <Link to="/contact" className="btn-primary text-sm py-2.5 px-6">
             Get a Quote
           </Link>
@@ -58,6 +71,13 @@ const Navbar = () => {
               {l.label}
             </Link>
           ))}
+          <Link
+            to={user ? (isAdmin ? "/admin" : "/dashboard") : "/auth"}
+            onClick={() => setOpen(false)}
+            className="block py-3 text-sm font-medium uppercase text-primary-foreground/80 hover:text-accent transition-colors"
+          >
+            {user ? (isAdmin ? "Admin Panel" : "Dashboard") : "Login / Sign Up"}
+          </Link>
           <Link to="/contact" onClick={() => setOpen(false)} className="btn-primary text-sm py-2.5 px-6 mt-3 w-full text-center">
             Get a Quote
           </Link>
