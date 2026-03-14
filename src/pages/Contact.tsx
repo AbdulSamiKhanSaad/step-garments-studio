@@ -2,10 +2,37 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import heroFactory from "@/assets/hero-factory.jpg";
 
 const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", subject: "", message: "" });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
+      toast({ title: "Please fill required fields", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.from("contact_submissions").insert({
+      name: form.name,
+      email: form.email,
+      phone: form.phone || null,
+      company: form.company || null,
+      subject: form.subject || null,
+      message: form.message,
+    });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setSubmitted(true);
+    }
+    setSubmitting(false);
+  };
 
   return (
     <div className="min-h-screen">
@@ -25,13 +52,10 @@ const Contact = () => {
       <section className="section-padding bg-background">
         <div className="container-max">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Contact Info */}
             <div className="space-y-8">
               <div>
                 <h3 className="heading-md text-foreground mb-6">Get a Free Quote</h3>
-                <p className="text-body text-muted-foreground">
-                  Ready to start manufacturing? Contact us today for a free quote and consultation.
-                </p>
+                <p className="text-body text-muted-foreground">Ready to start manufacturing? Contact us today for a free quote and consultation.</p>
               </div>
               {[
                 { icon: Mail, label: "Email", value: "info@stepgarments.com" },
@@ -50,7 +74,6 @@ const Contact = () => {
               ))}
             </div>
 
-            {/* Form */}
             <div className="lg:col-span-2 bg-card border border-border rounded-lg p-8">
               {submitted ? (
                 <div className="text-center py-16">
@@ -61,43 +84,36 @@ const Contact = () => {
                   <p className="text-muted-foreground mt-2">We'll get back to you within 24 hours.</p>
                 </div>
               ) : (
-                <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">Full Name *</label>
-                      <input type="text" required className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent" />
+                      <input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">Email *</label>
-                      <input type="email" required className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent" />
+                      <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">Phone</label>
+                      <input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-2">Company</label>
-                      <input type="text" className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">Product Interest</label>
-                      <select className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent">
-                        <option>T-Shirts</option>
-                        <option>Hoodies</option>
-                        <option>Sportswear</option>
-                        <option>Denim</option>
-                        <option>Jackets</option>
-                        <option>Polo Shirts</option>
-                        <option>Corporate Uniforms</option>
-                        <option>Other</option>
-                      </select>
+                      <input type="text" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Estimated Quantity</label>
-                    <input type="text" placeholder="e.g., 500 pieces" className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent" />
+                    <label className="block text-sm font-medium text-foreground mb-2">Subject</label>
+                    <input type="text" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="e.g. Bulk T-Shirt Order" className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">Message *</label>
-                    <textarea required rows={5} className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent resize-none" />
+                    <textarea required rows={5} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full px-4 py-3 bg-background border border-input rounded-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
                   </div>
-                  <button type="submit" className="btn-primary w-full sm:w-auto">Send Inquiry</button>
+                  <button type="submit" disabled={submitting} className="btn-primary w-full sm:w-auto">
+                    {submitting ? "Sending..." : "Send Inquiry"}
+                  </button>
                 </form>
               )}
             </div>
