@@ -140,6 +140,30 @@ const DashboardOverview = ({ userId }: { userId: string }) => {
           <Link to="/dashboard/messages" className="btn-outline text-sm py-2">Send Message</Link>
         </div>
       </div>
+
+      {/* Design Studio & Factory Tour Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+        <Link to="/dashboard/design" className="group bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 rounded-lg p-6 hover:border-accent/50 transition-all">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+              <Paintbrush className="w-5 h-5 text-accent" />
+            </div>
+            <h4 className="font-heading font-bold text-foreground">Design Studio</h4>
+          </div>
+          <p className="text-sm text-muted-foreground">Create custom garment designs with our interactive tool. Upload logos, add text, and export your designs.</p>
+          <span className="inline-block mt-3 text-accent text-sm font-semibold group-hover:underline">Open Studio →</span>
+        </Link>
+        <Link to="/dashboard/factory" className="group bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 rounded-lg p-6 hover:border-blue-500/50 transition-all">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+              <Factory className="w-5 h-5 text-blue-500" />
+            </div>
+            <h4 className="font-heading font-bold text-foreground">Factory Tour</h4>
+          </div>
+          <p className="text-sm text-muted-foreground">Explore our modern production facility with 3D garment views, factory photos, and production process details.</p>
+          <span className="inline-block mt-3 text-blue-500 text-sm font-semibold group-hover:underline">View Tour →</span>
+        </Link>
+      </div>
     </div>
   );
 };

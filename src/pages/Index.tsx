@@ -5,8 +5,8 @@ import ServicesPreview from "@/components/ServicesPreview";
 import ProductsPreview from "@/components/ProductsPreview";
 import ClientsSection from "@/components/ClientsSection";
 import PromoBanner from "@/components/PromoBanner";
+import DesignStudioCTA from "@/components/DesignStudioCTA";
 import Footer from "@/components/Footer";
-import heroFactory from "@/assets/hero-factory.jpg";
 import heroFashion from "@/assets/hero-fashion.jpg";
 import heroLabels from "@/assets/hero-labels.jpg";
 import serviceShipping from "@/assets/service-shipping.jpg";
@@ -19,6 +19,7 @@ const Index = () => (
     <ServicesPreview />
     <PromoBanner headline="Launch Your Clothing Brand Today" image={heroFashion} cta="Start Now" />
     <ProductsPreview />
+    <DesignStudioCTA />
     <PromoBanner headline="From Idea to Global Delivery" image={serviceShipping} cta="Learn More" link="/process" />
     <ClientsSection />
     <PromoBanner headline="Custom Manufacturing for Growing Brands" image={heroLabels} cta="Request a Quote" />

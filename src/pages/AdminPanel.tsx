@@ -125,13 +125,39 @@ const AdminDashboardOverview = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {cards.map((c) => (
-        <div key={c.label} className="bg-card border border-border rounded-lg p-6">
-          <p className="text-sm text-muted-foreground">{c.label}</p>
-          <p className={`text-3xl font-bold mt-1 ${c.color}`}>{c.value}</p>
-        </div>
-      ))}
+    <div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {cards.map((c) => (
+          <div key={c.label} className="bg-card border border-border rounded-lg p-6">
+            <p className="text-sm text-muted-foreground">{c.label}</p>
+            <p className={`text-3xl font-bold mt-1 ${c.color}`}>{c.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Design Studio & Factory Quick Access */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Link to="/admin/design" className="group bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 rounded-lg p-6 hover:border-accent/50 transition-all">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+              <Paintbrush className="w-5 h-5 text-accent" />
+            </div>
+            <h4 className="font-heading font-bold text-foreground">Design Studio</h4>
+          </div>
+          <p className="text-sm text-muted-foreground">Create and preview garment designs for clients.</p>
+          <span className="inline-block mt-3 text-accent text-sm font-semibold group-hover:underline">Open Studio →</span>
+        </Link>
+        <Link to="/admin/factory" className="group bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 rounded-lg p-6 hover:border-blue-500/50 transition-all">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+              <Factory className="w-5 h-5 text-blue-500" />
+            </div>
+            <h4 className="font-heading font-bold text-foreground">Factory Showcase</h4>
+          </div>
+          <p className="text-sm text-muted-foreground">View factory gallery, 3D previews, and production process.</p>
+          <span className="inline-block mt-3 text-blue-500 text-sm font-semibold group-hover:underline">View Factory →</span>
+        </Link>
+      </div>
     </div>
   );
 };
