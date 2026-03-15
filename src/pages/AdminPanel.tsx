@@ -13,6 +13,8 @@ const adminNav = [
   { label: "Messages", path: "/admin/messages", icon: MessageSquare },
   { label: "Invoices", path: "/admin/invoices", icon: Receipt },
   { label: "Contact Forms", path: "/admin/contacts", icon: Mail },
+  { label: "Design Studio", path: "/admin/design", icon: Paintbrush },
+  { label: "Factory", path: "/admin/factory", icon: Factory },
   { label: "Settings", path: "/admin/settings", icon: Settings },
 ];
 
