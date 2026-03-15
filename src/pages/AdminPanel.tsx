@@ -81,6 +81,9 @@ const AdminPanel = () => {
   );
 };
 
+const DesignStudioLazy = React.lazy(() => import("@/components/design-studio/DesignStudio"));
+const FactoryShowcaseLazy = React.lazy(() => import("@/components/FactoryShowcase"));
+
 const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
   switch (page) {
     case "/admin/clients": return <AdminClients />;
@@ -89,6 +92,8 @@ const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
     case "/admin/messages": return <AdminMessages userId={userId} />;
     case "/admin/invoices": return <AdminInvoices />;
     case "/admin/contacts": return <AdminContacts />;
+    case "/admin/design": return <React.Suspense fallback={<p className="text-muted-foreground">Loading Design Studio...</p>}><DesignStudioLazy /></React.Suspense>;
+    case "/admin/factory": return <React.Suspense fallback={<p className="text-muted-foreground">Loading...</p>}><FactoryShowcaseLazy /></React.Suspense>;
     case "/admin/settings": return <AdminSettings userId={userId} />;
     default: return <AdminDashboardOverview />;
   }
