@@ -83,12 +83,17 @@ const CustomerDashboard = () => {
   );
 };
 
+const DesignStudioLazy = React.lazy(() => import("@/components/design-studio/DesignStudio"));
+const FactoryShowcaseLazy = React.lazy(() => import("@/components/FactoryShowcase"));
+
 const DashboardContent = ({ page, userId }: { page: string; userId: string }) => {
   switch (page) {
     case "/dashboard/quotes": return <QuotesPage userId={userId} />;
     case "/dashboard/orders": return <OrdersPage userId={userId} />;
     case "/dashboard/messages": return <MessagesPage userId={userId} />;
     case "/dashboard/files": return <FilesPage userId={userId} />;
+    case "/dashboard/design": return <React.Suspense fallback={<p className="text-muted-foreground">Loading Design Studio...</p>}><DesignStudioLazy /></React.Suspense>;
+    case "/dashboard/factory": return <React.Suspense fallback={<p className="text-muted-foreground">Loading...</p>}><FactoryShowcaseLazy /></React.Suspense>;
     case "/dashboard/invoices": return <InvoicesPage userId={userId} />;
     case "/dashboard/profile": return <ProfilePage userId={userId} />;
     default: return <DashboardOverview userId={userId} />;
