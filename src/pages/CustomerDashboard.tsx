@@ -11,6 +11,8 @@ const customerNav = [
   { label: "My Orders", path: "/dashboard/orders", icon: Package },
   { label: "Messages", path: "/dashboard/messages", icon: MessageSquare },
   { label: "Files", path: "/dashboard/files", icon: Upload },
+  { label: "Design Studio", path: "/dashboard/design", icon: Paintbrush },
+  { label: "Factory Tour", path: "/dashboard/factory", icon: Factory },
   { label: "Invoices", path: "/dashboard/invoices", icon: Receipt },
   { label: "Profile", path: "/dashboard/profile", icon: User },
 ];
