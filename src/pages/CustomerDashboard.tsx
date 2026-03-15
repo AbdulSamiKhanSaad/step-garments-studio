@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { LayoutDashboard, FileText, Package, MessageSquare, Upload, Receipt, User, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, FileText, Package, MessageSquare, Upload, Receipt, User, LogOut, Menu, X, Paintbrush, Factory } from "lucide-react";
 
 const customerNav = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -11,6 +11,8 @@ const customerNav = [
   { label: "My Orders", path: "/dashboard/orders", icon: Package },
   { label: "Messages", path: "/dashboard/messages", icon: MessageSquare },
   { label: "Files", path: "/dashboard/files", icon: Upload },
+  { label: "Design Studio", path: "/dashboard/design", icon: Paintbrush },
+  { label: "Factory Tour", path: "/dashboard/factory", icon: Factory },
   { label: "Invoices", path: "/dashboard/invoices", icon: Receipt },
   { label: "Profile", path: "/dashboard/profile", icon: User },
 ];
@@ -81,12 +83,17 @@ const CustomerDashboard = () => {
   );
 };
 
+const DesignStudioLazy = React.lazy(() => import("@/components/design-studio/DesignStudio"));
+const FactoryShowcaseLazy = React.lazy(() => import("@/components/FactoryShowcase"));
+
 const DashboardContent = ({ page, userId }: { page: string; userId: string }) => {
   switch (page) {
     case "/dashboard/quotes": return <QuotesPage userId={userId} />;
     case "/dashboard/orders": return <OrdersPage userId={userId} />;
     case "/dashboard/messages": return <MessagesPage userId={userId} />;
     case "/dashboard/files": return <FilesPage userId={userId} />;
+    case "/dashboard/design": return <React.Suspense fallback={<p className="text-muted-foreground">Loading Design Studio...</p>}><DesignStudioLazy /></React.Suspense>;
+    case "/dashboard/factory": return <React.Suspense fallback={<p className="text-muted-foreground">Loading...</p>}><FactoryShowcaseLazy /></React.Suspense>;
     case "/dashboard/invoices": return <InvoicesPage userId={userId} />;
     case "/dashboard/profile": return <ProfilePage userId={userId} />;
     default: return <DashboardOverview userId={userId} />;

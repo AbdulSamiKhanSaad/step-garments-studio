@@ -37,6 +37,8 @@ const App = () => (
             <Route path="/dashboard/files" element={<CustomerDashboard />} />
             <Route path="/dashboard/invoices" element={<CustomerDashboard />} />
             <Route path="/dashboard/profile" element={<CustomerDashboard />} />
+            <Route path="/dashboard/design" element={<CustomerDashboard />} />
+            <Route path="/dashboard/factory" element={<CustomerDashboard />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/admin/clients" element={<AdminPanel />} />
             <Route path="/admin/quotes" element={<AdminPanel />} />
@@ -45,6 +47,8 @@ const App = () => (
             <Route path="/admin/invoices" element={<AdminPanel />} />
             <Route path="/admin/contacts" element={<AdminPanel />} />
             <Route path="/admin/settings" element={<AdminPanel />} />
+            <Route path="/admin/design" element={<AdminPanel />} />
+            <Route path="/admin/factory" element={<AdminPanel />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

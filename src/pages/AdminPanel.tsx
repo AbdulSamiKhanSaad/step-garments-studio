@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail } from "lucide-react";
+import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory } from "lucide-react";
 
 const adminNav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
@@ -13,6 +13,8 @@ const adminNav = [
   { label: "Messages", path: "/admin/messages", icon: MessageSquare },
   { label: "Invoices", path: "/admin/invoices", icon: Receipt },
   { label: "Contact Forms", path: "/admin/contacts", icon: Mail },
+  { label: "Design Studio", path: "/admin/design", icon: Paintbrush },
+  { label: "Factory", path: "/admin/factory", icon: Factory },
   { label: "Settings", path: "/admin/settings", icon: Settings },
 ];
 
@@ -79,6 +81,9 @@ const AdminPanel = () => {
   );
 };
 
+const DesignStudioLazy = React.lazy(() => import("@/components/design-studio/DesignStudio"));
+const FactoryShowcaseLazy = React.lazy(() => import("@/components/FactoryShowcase"));
+
 const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
   switch (page) {
     case "/admin/clients": return <AdminClients />;
@@ -87,6 +92,8 @@ const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
     case "/admin/messages": return <AdminMessages userId={userId} />;
     case "/admin/invoices": return <AdminInvoices />;
     case "/admin/contacts": return <AdminContacts />;
+    case "/admin/design": return <React.Suspense fallback={<p className="text-muted-foreground">Loading Design Studio...</p>}><DesignStudioLazy /></React.Suspense>;
+    case "/admin/factory": return <React.Suspense fallback={<p className="text-muted-foreground">Loading...</p>}><FactoryShowcaseLazy /></React.Suspense>;
     case "/admin/settings": return <AdminSettings userId={userId} />;
     default: return <AdminDashboardOverview />;
   }
