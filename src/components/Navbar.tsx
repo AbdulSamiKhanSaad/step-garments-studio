@@ -18,7 +18,9 @@ const Navbar = () => {
   const { user, isAdmin } = useAuth();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-navy/95 backdrop-blur-md border-b border-border/10">
+    <nav className="fixed top-0 left-0 right-0 z-50">
+      <TickerBanner />
+      <div className="bg-navy/95 backdrop-blur-md border-b border-border/10">
       <div className="container-max flex items-center justify-between h-16 sm:h-20 px-4 sm:px-6 lg:px-8">
         <Link to="/" className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-primary-foreground">
           STEP <span className="text-accent">GARMENTS</span>
