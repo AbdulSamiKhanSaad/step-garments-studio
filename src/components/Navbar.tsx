@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import TickerBanner from "@/components/TickerBanner";
 
 const links = [
   { label: "Home", path: "/" },
