@@ -304,6 +304,33 @@ export type Database = {
         }
         Relationships: []
       }
+      ticker_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          message: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          message: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          message?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       uploaded_files: {
         Row: {
           created_at: string

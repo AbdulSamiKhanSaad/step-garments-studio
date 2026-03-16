@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory } from "lucide-react";
+import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone } from "lucide-react";
 
 const adminNav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
@@ -15,6 +15,7 @@ const adminNav = [
   { label: "Contact Forms", path: "/admin/contacts", icon: Mail },
   { label: "Design Studio", path: "/admin/design", icon: Paintbrush },
   { label: "Factory", path: "/admin/factory", icon: Factory },
+  { label: "Ticker Messages", path: "/admin/ticker", icon: Megaphone },
   { label: "Settings", path: "/admin/settings", icon: Settings },
 ];
 
@@ -94,6 +95,7 @@ const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
     case "/admin/contacts": return <AdminContacts />;
     case "/admin/design": return <React.Suspense fallback={<p className="text-muted-foreground">Loading Design Studio...</p>}><DesignStudioLazy /></React.Suspense>;
     case "/admin/factory": return <React.Suspense fallback={<p className="text-muted-foreground">Loading...</p>}><FactoryShowcaseLazy /></React.Suspense>;
+    case "/admin/ticker": return <AdminTickerMessages />;
     case "/admin/settings": return <AdminSettings userId={userId} />;
     default: return <AdminDashboardOverview />;
   }
@@ -450,13 +452,97 @@ const AdminContacts = () => {
   );
 };
 
+// Ticker Messages Management
+const AdminTickerMessages = () => {
+  const [messages, setMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+
+  const fetchMessages = async () => {
+    const { data } = await supabase.from("ticker_messages").select("*").order("sort_order", { ascending: true });
+    setMessages(data || []);
+  };
+
+  useEffect(() => { fetchMessages(); }, []);
+
+  const addMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+    const { error } = await supabase.from("ticker_messages").insert({ message: newMessage, sort_order: messages.length });
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Message added!" });
+    setNewMessage("");
+    fetchMessages();
+  };
+
+  const updateMessage = async (id: string) => {
+    if (!editText.trim()) return;
+    await supabase.from("ticker_messages").update({ message: editText }).eq("id", id);
+    toast({ title: "Message updated!" });
+    setEditingId(null);
+    fetchMessages();
+  };
+
+  const toggleActive = async (id: string, currentActive: boolean) => {
+    await supabase.from("ticker_messages").update({ is_active: !currentActive }).eq("id", id);
+    fetchMessages();
+  };
+
+  const deleteMessage = async (id: string) => {
+    await supabase.from("ticker_messages").delete().eq("id", id);
+    toast({ title: "Message deleted" });
+    fetchMessages();
+  };
+
+  return (
+    <div>
+      <h2 className="font-heading text-xl font-bold text-foreground mb-6">Ticker Messages</h2>
+      <p className="text-sm text-muted-foreground mb-4">Manage the scrolling announcements shown on the navbar across all pages.</p>
+
+      <form onSubmit={addMessage} className="flex gap-3 mb-6">
+        <input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="New ticker message..." required className="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
+        <button type="submit" className="btn-primary text-sm py-2">Add Message</button>
+      </form>
+
+      <div className="space-y-3">
+        {messages.length === 0 && <p className="text-muted-foreground text-sm">No ticker messages yet. Add one above.</p>}
+        {messages.map((m) => (
+          <div key={m.id} className={`bg-card border rounded-lg p-4 flex items-start gap-3 ${m.is_active ? "border-accent/30" : "border-border opacity-60"}`}>
+            <div className="flex-1">
+              {editingId === m.id ? (
+                <div className="flex gap-2">
+                  <input value={editText} onChange={(e) => setEditText(e.target.value)} className="flex-1 h-9 rounded-md border border-input bg-background px-3 text-sm" />
+                  <button onClick={() => updateMessage(m.id)} className="px-3 py-1 bg-accent text-accent-foreground text-xs rounded-md hover:opacity-90 transition-opacity">Save</button>
+                  <button onClick={() => setEditingId(null)} className="px-3 py-1 bg-muted text-foreground text-xs rounded-md hover:bg-muted/80 transition-colors">Cancel</button>
+                </div>
+              ) : (
+                <p className="text-sm text-foreground">{m.message}</p>
+              )}
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {m.is_active ? "✅ Active" : "⏸️ Inactive"} • Added {new Date(m.created_at).toLocaleDateString()}
+              </p>
+            </div>
+            <div className="flex gap-1 shrink-0">
+              <button onClick={() => { setEditingId(m.id); setEditText(m.message); }} className="px-2 py-1 bg-muted text-foreground text-xs rounded hover:bg-muted/80 transition-colors">Edit</button>
+              <button onClick={() => toggleActive(m.id, m.is_active)} className="px-2 py-1 bg-muted text-foreground text-xs rounded hover:bg-muted/80 transition-colors">
+                {m.is_active ? "Pause" : "Activate"}
+              </button>
+              <button onClick={() => deleteMessage(m.id)} className="px-2 py-1 bg-destructive/10 text-destructive text-xs rounded hover:bg-destructive/20 transition-colors">Delete</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // Settings (Admin invite)
 const AdminSettings = ({ userId }: { userId: string }) => {
   const [email, setEmail] = useState("");
 
   const inviteAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Look up user by email in profiles
     const { data: profile } = await supabase.from("profiles").select("user_id").eq("email", email).maybeSingle();
     if (!profile) { toast({ title: "User not found", description: "They must sign up first.", variant: "destructive" }); return; }
     const { error } = await supabase.from("user_roles").insert({ user_id: profile.user_id, role: "admin" });
