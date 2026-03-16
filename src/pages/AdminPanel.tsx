@@ -15,6 +15,7 @@ const adminNav = [
   { label: "Contact Forms", path: "/admin/contacts", icon: Mail },
   { label: "Design Studio", path: "/admin/design", icon: Paintbrush },
   { label: "Factory", path: "/admin/factory", icon: Factory },
+  { label: "Ticker Messages", path: "/admin/ticker", icon: Megaphone },
   { label: "Settings", path: "/admin/settings", icon: Settings },
 ];
 
