@@ -281,11 +281,11 @@ const MessagesPage = ({ userId }: { userId: string }) => {
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMsg.trim()) return;
-    // Get an admin user to send to
-    const { data: admins } = await supabase.from("user_roles").select("user_id").eq("role", "admin").limit(1);
-    const adminId = admins?.[0]?.user_id;
-    if (!adminId) { toast({ title: "No admin available", variant: "destructive" }); return; }
-    await supabase.from("messages").insert({ sender_id: userId, receiver_id: adminId, content: newMsg });
+    // Use security definer function to get admin user_id (bypasses RLS on user_roles)
+    const { data: adminId } = await supabase.rpc("get_admin_user_id");
+    if (!adminId) { toast({ title: "No admin available yet. Please try again later.", variant: "destructive" }); return; }
+    const { error } = await supabase.from("messages").insert({ sender_id: userId, receiver_id: adminId, content: newMsg });
+    if (error) { toast({ title: "Failed to send", description: error.message, variant: "destructive" }); return; }
     setNewMsg("");
     const { data } = await supabase.from("messages").select("*").or(`sender_id.eq.${userId},receiver_id.eq.${userId}`).order("created_at", { ascending: true });
     setMessages(data || []);
