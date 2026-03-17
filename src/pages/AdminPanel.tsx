@@ -3,13 +3,15 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone } from "lucide-react";
+import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone, FlaskConical, FolderUp } from "lucide-react";
 
 const adminNav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
   { label: "Clients", path: "/admin/clients", icon: Users },
   { label: "Quotes", path: "/admin/quotes", icon: FileText },
   { label: "Orders", path: "/admin/orders", icon: Package },
+  { label: "Samples", path: "/admin/samples", icon: FlaskConical },
+  { label: "Tech Packs", path: "/admin/techpacks", icon: FolderUp },
   { label: "Messages", path: "/admin/messages", icon: MessageSquare },
   { label: "Invoices", path: "/admin/invoices", icon: Receipt },
   { label: "Contact Forms", path: "/admin/contacts", icon: Mail },
@@ -38,30 +40,19 @@ const AdminPanel = () => {
     <div className="min-h-screen bg-secondary flex">
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-navy text-primary-foreground transform transition-transform lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-primary-foreground/10">
-          <Link to="/" className="font-heading text-lg font-bold">
-            STEP <span className="text-accent">ADMIN</span>
-          </Link>
+          <Link to="/" className="font-heading text-lg font-bold">STEP <span className="text-accent">ADMIN</span></Link>
           <button className="lg:hidden" onClick={() => setSidebarOpen(false)}><X className="w-5 h-5" /></button>
         </div>
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 space-y-1 max-h-[calc(100vh-8rem)] overflow-y-auto">
           {adminNav.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                location.pathname === item.path ? "bg-accent text-accent-foreground" : "text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
-              }`}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
+            <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${location.pathname === item.path ? "bg-accent text-accent-foreground" : "text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"}`}>
+              <item.icon className="w-4 h-4" />{item.label}
             </Link>
           ))}
         </nav>
         <div className="absolute bottom-4 left-4 right-4">
           <button onClick={() => { signOut(); navigate("/"); }} className="flex items-center gap-3 px-4 py-2.5 rounded-md text-sm text-red-300 hover:bg-red-500/10 w-full">
-            <LogOut className="w-4 h-4" />
-            Sign Out
+            <LogOut className="w-4 h-4" />Sign Out
           </button>
         </div>
       </aside>
@@ -90,6 +81,8 @@ const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
     case "/admin/clients": return <AdminClients />;
     case "/admin/quotes": return <AdminQuotes />;
     case "/admin/orders": return <AdminOrders userId={userId} />;
+    case "/admin/samples": return <AdminSamples />;
+    case "/admin/techpacks": return <AdminTechPacks />;
     case "/admin/messages": return <AdminMessages userId={userId} />;
     case "/admin/invoices": return <AdminInvoices />;
     case "/admin/contacts": return <AdminContacts />;
@@ -103,18 +96,19 @@ const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
 
 // Dashboard Overview
 const AdminDashboardOverview = () => {
-  const [stats, setStats] = useState({ clients: 0, orders: 0, pendingQuotes: 0, revenue: 0 });
+  const [stats, setStats] = useState({ clients: 0, orders: 0, pendingQuotes: 0, revenue: 0, pendingSamples: 0 });
 
   useEffect(() => {
     const fetch = async () => {
-      const [c, o, q, r] = await Promise.all([
+      const [c, o, q, r, s] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("orders").select("id", { count: "exact", head: true }),
         supabase.from("quotes").select("id", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("orders").select("total_amount"),
+        supabase.from("sample_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
       ]);
       const revenue = (r.data || []).reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0);
-      setStats({ clients: c.count || 0, orders: o.count || 0, pendingQuotes: q.count || 0, revenue });
+      setStats({ clients: c.count || 0, orders: o.count || 0, pendingQuotes: q.count || 0, revenue, pendingSamples: s.count || 0 });
     };
     fetch();
   }, []);
@@ -124,26 +118,23 @@ const AdminDashboardOverview = () => {
     { label: "Total Orders", value: stats.orders, color: "text-green-600" },
     { label: "Pending Quotes", value: stats.pendingQuotes, color: "text-orange-600" },
     { label: "Revenue", value: `$${stats.revenue.toLocaleString()}`, color: "text-purple-600" },
+    { label: "Pending Samples", value: stats.pendingSamples, color: "text-cyan-600" },
   ];
 
   return (
     <div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         {cards.map((c) => (
           <div key={c.label} className="bg-card border border-border rounded-lg p-6">
             <p className="text-sm text-muted-foreground">{c.label}</p>
-            <p className={`text-3xl font-bold mt-1 ${c.color}`}>{c.value}</p>
+            <p className={`text-2xl font-bold mt-1 ${c.color}`}>{c.value}</p>
           </div>
         ))}
       </div>
-
-      {/* Design Studio & Factory Quick Access */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link to="/admin/design" className="group bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 rounded-lg p-6 hover:border-accent/50 transition-all">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
-              <Paintbrush className="w-5 h-5 text-accent" />
-            </div>
+            <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center"><Paintbrush className="w-5 h-5 text-accent" /></div>
             <h4 className="font-heading font-bold text-foreground">Design Studio</h4>
           </div>
           <p className="text-sm text-muted-foreground">Create and preview garment designs for clients.</p>
@@ -151,14 +142,147 @@ const AdminDashboardOverview = () => {
         </Link>
         <Link to="/admin/factory" className="group bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 rounded-lg p-6 hover:border-blue-500/50 transition-all">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <Factory className="w-5 h-5 text-blue-500" />
-            </div>
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center"><Factory className="w-5 h-5 text-blue-500" /></div>
             <h4 className="font-heading font-bold text-foreground">Factory Showcase</h4>
           </div>
           <p className="text-sm text-muted-foreground">View factory gallery, 3D previews, and production process.</p>
           <span className="inline-block mt-3 text-blue-500 text-sm font-semibold group-hover:underline">View Factory →</span>
         </Link>
+      </div>
+    </div>
+  );
+};
+
+// Admin Samples
+const AdminSamples = () => {
+  const [samples, setSamples] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, any>>({});
+
+  const fetchSamples = async () => {
+    const { data } = await supabase.from("sample_requests").select("*").order("created_at", { ascending: false });
+    setSamples(data || []);
+    const userIds = [...new Set((data || []).map((s: any) => s.user_id))];
+    if (userIds.length > 0) {
+      const { data: profs } = await supabase.from("profiles").select("user_id, full_name, email").in("user_id", userIds);
+      const map: Record<string, any> = {};
+      (profs || []).forEach((p: any) => { map[p.user_id] = p; });
+      setProfiles(map);
+    }
+  };
+
+  useEffect(() => { fetchSamples(); }, []);
+
+  const updateSample = async (id: string, status: string, feedback?: string) => {
+    const update: any = { status };
+    if (feedback !== undefined) update.admin_feedback = feedback;
+    await supabase.from("sample_requests").update(update).eq("id", id);
+    toast({ title: `Sample ${status}` });
+    fetchSamples();
+  };
+
+  const statuses = ["pending", "approved", "in_production", "shipped", "delivered", "rejected"];
+  const statusColor: Record<string, string> = { pending: "bg-yellow-100 text-yellow-700", approved: "bg-green-100 text-green-700", rejected: "bg-red-100 text-red-700", in_production: "bg-blue-100 text-blue-700", shipped: "bg-cyan-100 text-cyan-700", delivered: "bg-emerald-100 text-emerald-700" };
+
+  return (
+    <div>
+      <h2 className="font-heading text-xl font-bold text-foreground mb-6">Sample Requests</h2>
+      <div className="space-y-4">
+        {samples.length === 0 && <p className="text-muted-foreground text-sm">No sample requests yet.</p>}
+        {samples.map((s) => {
+          const profile = profiles[s.user_id];
+          return (
+            <div key={s.id} className="bg-card border border-border rounded-lg p-5">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <p className="font-bold text-foreground">{s.product_type}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {profile?.full_name || profile?.email || s.user_id.slice(0, 8)} • Size: {s.size || "N/A"} • Color: {s.color || "N/A"} • Qty: {s.quantity}
+                  </p>
+                  {s.description && <p className="text-sm text-foreground mt-1">{s.description}</p>}
+                  <p className="text-xs text-muted-foreground mt-1">{new Date(s.created_at).toLocaleDateString()}</p>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor[s.status] || "bg-muted text-muted-foreground"}`}>{s.status.replace("_", " ")}</span>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3 items-center">
+                <select defaultValue={s.status} onChange={(e) => updateSample(s.id, e.target.value)} className="h-8 rounded-md border border-input bg-background px-2 text-xs font-medium">
+                  {statuses.map((st) => <option key={st} value={st}>{st.replace("_", " ")}</option>)}
+                </select>
+                <input placeholder="Add feedback..." defaultValue={s.admin_feedback || ""} onBlur={async (e) => {
+                  if (e.target.value !== (s.admin_feedback || "")) {
+                    await supabase.from("sample_requests").update({ admin_feedback: e.target.value }).eq("id", s.id);
+                    toast({ title: "Feedback saved" });
+                  }
+                }} className="h-8 flex-1 min-w-[200px] rounded-md border border-input bg-background px-2 text-xs" />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Admin Tech Packs
+const AdminTechPacks = () => {
+  const [files, setFiles] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase.from("uploaded_files").select("*").order("created_at", { ascending: false });
+      setFiles(data || []);
+      const userIds = [...new Set((data || []).map((f: any) => f.user_id))];
+      if (userIds.length > 0) {
+        const { data: profs } = await supabase.from("profiles").select("user_id, full_name, email").in("user_id", userIds);
+        const map: Record<string, any> = {};
+        (profs || []).forEach((p: any) => { map[p.user_id] = p; });
+        setProfiles(map);
+      }
+    };
+    fetch();
+  }, []);
+
+  const getFileIcon = (type: string) => {
+    if (type?.includes("pdf")) return "📄";
+    if (type?.includes("zip") || type?.includes("compressed")) return "📦";
+    if (type?.includes("image")) return "🖼️";
+    return "📁";
+  };
+
+  return (
+    <div>
+      <h2 className="font-heading text-xl font-bold text-foreground mb-2">Tech Packs & Design Files</h2>
+      <p className="text-sm text-muted-foreground mb-6">All files uploaded by clients including tech packs, patterns, and design specifications.</p>
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-muted">
+            <tr>
+              <th className="text-left p-3 font-medium text-muted-foreground">File</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Client</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Size</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Date</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {files.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">No files uploaded yet.</td></tr>}
+            {files.map((f) => {
+              const profile = profiles[f.user_id];
+              return (
+                <tr key={f.id} className="border-t border-border">
+                  <td className="p-3 text-foreground">
+                    <span className="mr-2">{getFileIcon(f.file_type)}</span>
+                    {f.file_name}
+                  </td>
+                  <td className="p-3 text-muted-foreground">{profile?.full_name || profile?.email || "—"}</td>
+                  <td className="p-3 text-muted-foreground">{f.file_size ? `${(f.file_size / 1024).toFixed(1)} KB` : "—"}</td>
+                  <td className="p-3 text-muted-foreground">{new Date(f.created_at).toLocaleDateString()}</td>
+                  <td className="p-3"><a href={f.file_url} target="_blank" rel="noopener noreferrer" className="text-accent text-sm font-medium hover:underline">Download</a></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -196,18 +320,12 @@ const AdminClients = () => {
 // Quotes
 const AdminQuotes = () => {
   const [quotes, setQuotes] = useState<any[]>([]);
-
-  const fetchQuotes = async () => {
-    const { data } = await supabase.from("quotes").select("*").order("created_at", { ascending: false });
-    setQuotes(data || []);
-  };
-
+  const fetchQuotes = async () => { const { data } = await supabase.from("quotes").select("*").order("created_at", { ascending: false }); setQuotes(data || []); };
   useEffect(() => { fetchQuotes(); }, []);
 
   const updateQuote = async (id: string, status: string, admin_notes?: string) => {
     await supabase.from("quotes").update({ status, ...(admin_notes !== undefined ? { admin_notes } : {}) }).eq("id", id);
-    toast({ title: `Quote ${status}` });
-    fetchQuotes();
+    toast({ title: `Quote ${status}` }); fetchQuotes();
   };
 
   const statusColor: Record<string, string> = { pending: "bg-yellow-100 text-yellow-700", reviewed: "bg-blue-100 text-blue-700", approved: "bg-green-100 text-green-700", rejected: "bg-red-100 text-red-700" };
@@ -221,9 +339,7 @@ const AdminQuotes = () => {
             <div className="flex justify-between items-start mb-3">
               <div>
                 <p className="font-bold text-foreground">{q.product_type}</p>
-                <p className="text-sm text-muted-foreground">
-                  {q.guest_name || "Logged-in user"} • {q.guest_email || q.user_id?.slice(0, 8)} • Qty: {q.quantity || "N/A"}
-                </p>
+                <p className="text-sm text-muted-foreground">{q.guest_name || "Logged-in user"} • {q.guest_email || q.user_id?.slice(0, 8)} • Qty: {q.quantity || "N/A"}</p>
                 {q.message && <p className="text-sm text-foreground mt-1">{q.message}</p>}
               </div>
               <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor[q.status] || ""}`}>{q.status}</span>
@@ -245,32 +361,19 @@ const AdminOrders = ({ userId }: { userId: string }) => {
   const [orders, setOrders] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ user_id: "", product_type: "", quantity: "", total_amount: "" });
-
-  const fetchOrders = async () => {
-    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
-    setOrders(data || []);
-  };
-
+  const fetchOrders = async () => { const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false }); setOrders(data || []); };
   useEffect(() => { fetchOrders(); }, []);
 
   const createOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from("orders").insert({
-      user_id: form.user_id,
-      product_type: form.product_type,
-      quantity: form.quantity,
-      total_amount: parseFloat(form.total_amount) || 0,
-    });
+    const { error } = await supabase.from("orders").insert({ user_id: form.user_id, product_type: form.product_type, quantity: form.quantity, total_amount: parseFloat(form.total_amount) || 0 });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Order created!" });
-    setShowForm(false);
-    fetchOrders();
+    toast({ title: "Order created!" }); setShowForm(false); fetchOrders();
   };
 
   const updateStatus = async (id: string, status: string) => {
     await supabase.from("orders").update({ status }).eq("id", id);
-    toast({ title: `Status updated to ${status}` });
-    fetchOrders();
+    toast({ title: `Status updated to ${status}` }); fetchOrders();
   };
 
   const statuses = ["pending", "sampling", "production", "quality_check", "shipped", "delivered"];
@@ -325,7 +428,6 @@ const AdminMessages = ({ userId }: { userId: string }) => {
   const [newMsg, setNewMsg] = useState("");
 
   useEffect(() => {
-    // Get unique users who have messaged
     supabase.from("messages").select("sender_id, receiver_id").then(({ data }) => {
       const userIds = new Set<string>();
       (data || []).forEach((m) => { if (m.sender_id !== userId) userIds.add(m.sender_id); if (m.receiver_id !== userId) userIds.add(m.receiver_id); });
@@ -390,9 +492,7 @@ const AdminMessages = ({ userId }: { userId: string }) => {
 // Invoices
 const AdminInvoices = () => {
   const [invoices, setInvoices] = useState<any[]>([]);
-  useEffect(() => {
-    supabase.from("invoices").select("*").order("created_at", { ascending: false }).then(({ data }) => setInvoices(data || []));
-  }, []);
+  useEffect(() => { supabase.from("invoices").select("*").order("created_at", { ascending: false }).then(({ data }) => setInvoices(data || [])); }, []);
 
   return (
     <div>
@@ -416,12 +516,10 @@ const AdminInvoices = () => {
   );
 };
 
-// Contact Form Submissions
+// Contacts
 const AdminContacts = () => {
   const [contacts, setContacts] = useState<any[]>([]);
-  useEffect(() => {
-    supabase.from("contact_submissions").select("*").order("created_at", { ascending: false }).then(({ data }) => setContacts(data || []));
-  }, []);
+  useEffect(() => { supabase.from("contact_submissions").select("*").order("created_at", { ascending: false }).then(({ data }) => setContacts(data || [])); }, []);
 
   const markRead = async (id: string) => {
     await supabase.from("contact_submissions").update({ is_read: true }).eq("id", id);
@@ -452,18 +550,14 @@ const AdminContacts = () => {
   );
 };
 
-// Ticker Messages Management
+// Ticker Messages
 const AdminTickerMessages = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
 
-  const fetchMessages = async () => {
-    const { data } = await supabase.from("ticker_messages").select("*").order("sort_order", { ascending: true });
-    setMessages(data || []);
-  };
-
+  const fetchMessages = async () => { const { data } = await supabase.from("ticker_messages").select("*").order("sort_order", { ascending: true }); setMessages(data || []); };
   useEffect(() => { fetchMessages(); }, []);
 
   const addMessage = async (e: React.FormEvent) => {
@@ -471,42 +565,34 @@ const AdminTickerMessages = () => {
     if (!newMessage.trim()) return;
     const { error } = await supabase.from("ticker_messages").insert({ message: newMessage, sort_order: messages.length });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Message added!" });
-    setNewMessage("");
-    fetchMessages();
+    toast({ title: "Message added!" }); setNewMessage(""); fetchMessages();
   };
 
   const updateMessage = async (id: string) => {
     if (!editText.trim()) return;
     await supabase.from("ticker_messages").update({ message: editText }).eq("id", id);
-    toast({ title: "Message updated!" });
-    setEditingId(null);
-    fetchMessages();
+    toast({ title: "Message updated!" }); setEditingId(null); fetchMessages();
   };
 
   const toggleActive = async (id: string, currentActive: boolean) => {
-    await supabase.from("ticker_messages").update({ is_active: !currentActive }).eq("id", id);
-    fetchMessages();
+    await supabase.from("ticker_messages").update({ is_active: !currentActive }).eq("id", id); fetchMessages();
   };
 
   const deleteMessage = async (id: string) => {
     await supabase.from("ticker_messages").delete().eq("id", id);
-    toast({ title: "Message deleted" });
-    fetchMessages();
+    toast({ title: "Message deleted" }); fetchMessages();
   };
 
   return (
     <div>
       <h2 className="font-heading text-xl font-bold text-foreground mb-6">Ticker Messages</h2>
       <p className="text-sm text-muted-foreground mb-4">Manage the scrolling announcements shown on the navbar across all pages.</p>
-
       <form onSubmit={addMessage} className="flex gap-3 mb-6">
         <input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="New ticker message..." required className="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
         <button type="submit" className="btn-primary text-sm py-2">Add Message</button>
       </form>
-
       <div className="space-y-3">
-        {messages.length === 0 && <p className="text-muted-foreground text-sm">No ticker messages yet. Add one above.</p>}
+        {messages.length === 0 && <p className="text-muted-foreground text-sm">No ticker messages yet.</p>}
         {messages.map((m) => (
           <div key={m.id} className={`bg-card border rounded-lg p-4 flex items-start gap-3 ${m.is_active ? "border-accent/30" : "border-border opacity-60"}`}>
             <div className="flex-1">
@@ -519,15 +605,11 @@ const AdminTickerMessages = () => {
               ) : (
                 <p className="text-sm text-foreground">{m.message}</p>
               )}
-              <p className="text-[10px] text-muted-foreground mt-1">
-                {m.is_active ? "✅ Active" : "⏸️ Inactive"} • Added {new Date(m.created_at).toLocaleDateString()}
-              </p>
+              <p className="text-[10px] text-muted-foreground mt-1">{m.is_active ? "✅ Active" : "⏸️ Inactive"} • Added {new Date(m.created_at).toLocaleDateString()}</p>
             </div>
             <div className="flex gap-1 shrink-0">
               <button onClick={() => { setEditingId(m.id); setEditText(m.message); }} className="px-2 py-1 bg-muted text-foreground text-xs rounded hover:bg-muted/80 transition-colors">Edit</button>
-              <button onClick={() => toggleActive(m.id, m.is_active)} className="px-2 py-1 bg-muted text-foreground text-xs rounded hover:bg-muted/80 transition-colors">
-                {m.is_active ? "Pause" : "Activate"}
-              </button>
+              <button onClick={() => toggleActive(m.id, m.is_active)} className="px-2 py-1 bg-muted text-foreground text-xs rounded hover:bg-muted/80 transition-colors">{m.is_active ? "Pause" : "Activate"}</button>
               <button onClick={() => deleteMessage(m.id)} className="px-2 py-1 bg-destructive/10 text-destructive text-xs rounded hover:bg-destructive/20 transition-colors">Delete</button>
             </div>
           </div>
@@ -537,7 +619,7 @@ const AdminTickerMessages = () => {
   );
 };
 
-// Settings (Admin invite)
+// Settings
 const AdminSettings = ({ userId }: { userId: string }) => {
   const [email, setEmail] = useState("");
 
@@ -547,8 +629,7 @@ const AdminSettings = ({ userId }: { userId: string }) => {
     if (!profile) { toast({ title: "User not found", description: "They must sign up first.", variant: "destructive" }); return; }
     const { error } = await supabase.from("user_roles").insert({ user_id: profile.user_id, role: "admin" });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Admin role granted!", description: `${email} is now an admin.` });
-    setEmail("");
+    toast({ title: "Admin role granted!", description: `${email} is now an admin.` }); setEmail("");
   };
 
   return (
