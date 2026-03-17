@@ -3,12 +3,13 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { LayoutDashboard, FileText, Package, MessageSquare, Upload, Receipt, User, LogOut, Menu, X, Paintbrush, Factory } from "lucide-react";
+import { LayoutDashboard, FileText, Package, MessageSquare, Upload, Receipt, User, LogOut, Menu, X, Paintbrush, Factory, FlaskConical } from "lucide-react";
 
 const customerNav = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "My Quotes", path: "/dashboard/quotes", icon: FileText },
   { label: "My Orders", path: "/dashboard/orders", icon: Package },
+  { label: "Samples", path: "/dashboard/samples", icon: FlaskConical },
   { label: "Messages", path: "/dashboard/messages", icon: MessageSquare },
   { label: "Files", path: "/dashboard/files", icon: Upload },
   { label: "Design Studio", path: "/dashboard/design", icon: Paintbrush },
@@ -34,38 +35,25 @@ const CustomerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-secondary flex">
-      {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-border">
-          <Link to="/" className="font-heading text-lg font-bold text-foreground">
-            STEP <span className="text-accent">GARMENTS</span>
-          </Link>
+          <Link to="/" className="font-heading text-lg font-bold text-foreground">STEP <span className="text-accent">GARMENTS</span></Link>
           <button className="lg:hidden text-foreground" onClick={() => setSidebarOpen(false)}><X className="w-5 h-5" /></button>
         </div>
         <nav className="p-4 space-y-1">
           {customerNav.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                location.pathname === item.path ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
+            <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors ${location.pathname === item.path ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+              <item.icon className="w-4 h-4" />{item.label}
             </Link>
           ))}
         </nav>
         <div className="absolute bottom-4 left-4 right-4">
           <button onClick={() => { signOut(); navigate("/"); }} className="flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 w-full transition-colors">
-            <LogOut className="w-4 h-4" />
-            Sign Out
+            <LogOut className="w-4 h-4" />Sign Out
           </button>
         </div>
       </aside>
 
-      {/* Main content */}
       <div className="flex-1 lg:ml-64">
         <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
@@ -74,7 +62,6 @@ const CustomerDashboard = () => {
           </div>
           <p className="text-sm text-muted-foreground hidden sm:block">Welcome, {profile?.full_name || user.email}</p>
         </header>
-
         <main className="p-6">
           <DashboardContent page={location.pathname} userId={user.id} />
         </main>
@@ -90,6 +77,7 @@ const DashboardContent = ({ page, userId }: { page: string; userId: string }) =>
   switch (page) {
     case "/dashboard/quotes": return <QuotesPage userId={userId} />;
     case "/dashboard/orders": return <OrdersPage userId={userId} />;
+    case "/dashboard/samples": return <SamplesPage userId={userId} />;
     case "/dashboard/messages": return <MessagesPage userId={userId} />;
     case "/dashboard/files": return <FilesPage userId={userId} />;
     case "/dashboard/design": return <React.Suspense fallback={<p className="text-muted-foreground">Loading Design Studio...</p>}><DesignStudioLazy /></React.Suspense>;
@@ -136,33 +124,109 @@ const DashboardOverview = ({ userId }: { userId: string }) => {
         <h3 className="font-heading font-bold text-foreground mb-2">Quick Actions</h3>
         <div className="flex flex-wrap gap-3">
           <Link to="/dashboard/quotes" className="btn-primary text-sm py-2">Submit Quote Request</Link>
+          <Link to="/dashboard/samples" className="btn-outline text-sm py-2">Request Sample</Link>
           <Link to="/dashboard/orders" className="btn-outline text-sm py-2">View Orders</Link>
           <Link to="/dashboard/messages" className="btn-outline text-sm py-2">Send Message</Link>
         </div>
       </div>
-
-      {/* Design Studio & Factory Tour Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
         <Link to="/dashboard/design" className="group bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 rounded-lg p-6 hover:border-accent/50 transition-all">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
-              <Paintbrush className="w-5 h-5 text-accent" />
-            </div>
+            <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center"><Paintbrush className="w-5 h-5 text-accent" /></div>
             <h4 className="font-heading font-bold text-foreground">Design Studio</h4>
           </div>
-          <p className="text-sm text-muted-foreground">Create custom garment designs with our interactive tool. Upload logos, add text, and export your designs.</p>
+          <p className="text-sm text-muted-foreground">Create custom garment designs with our interactive tool.</p>
           <span className="inline-block mt-3 text-accent text-sm font-semibold group-hover:underline">Open Studio →</span>
         </Link>
         <Link to="/dashboard/factory" className="group bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 rounded-lg p-6 hover:border-blue-500/50 transition-all">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <Factory className="w-5 h-5 text-blue-500" />
-            </div>
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center"><Factory className="w-5 h-5 text-blue-500" /></div>
             <h4 className="font-heading font-bold text-foreground">Factory Tour</h4>
           </div>
-          <p className="text-sm text-muted-foreground">Explore our modern production facility with 3D garment views, factory photos, and production process details.</p>
+          <p className="text-sm text-muted-foreground">Explore our modern production facility.</p>
           <span className="inline-block mt-3 text-blue-500 text-sm font-semibold group-hover:underline">View Tour →</span>
         </Link>
+      </div>
+    </div>
+  );
+};
+
+// Samples
+const SamplesPage = ({ userId }: { userId: string }) => {
+  const [samples, setSamples] = useState<any[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ product_type: "", description: "", size: "", color: "", quantity: 1 });
+
+  const fetchSamples = async () => {
+    const { data } = await supabase.from("sample_requests").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+    setSamples(data || []);
+  };
+
+  useEffect(() => { fetchSamples(); }, [userId]);
+
+  const submitSample = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.from("sample_requests").insert({ ...form, user_id: userId });
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Sample request submitted!" });
+    setShowForm(false);
+    setForm({ product_type: "", description: "", size: "", color: "", quantity: 1 });
+    fetchSamples();
+  };
+
+  const statusColor: Record<string, string> = { pending: "bg-yellow-100 text-yellow-700", approved: "bg-green-100 text-green-700", rejected: "bg-red-100 text-red-700", in_production: "bg-blue-100 text-blue-700", shipped: "bg-cyan-100 text-cyan-700", delivered: "bg-emerald-100 text-emerald-700" };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="font-heading text-xl font-bold text-foreground">Sample Requests</h2>
+        <button onClick={() => setShowForm(!showForm)} className="btn-primary text-sm py-2">{showForm ? "Cancel" : "Request Sample"}</button>
+      </div>
+      {showForm && (
+        <form onSubmit={submitSample} className="bg-card border border-border rounded-lg p-6 mb-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-foreground">Product Type *</label>
+              <select value={form.product_type} onChange={(e) => setForm({ ...form, product_type: e.target.value })} required className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm">
+                <option value="">Select product...</option>
+                {["T-Shirts", "Hoodies", "Tracksuits", "Jackets", "Sportswear", "Polo Shirts", "Denim", "Shorts", "Tank Tops", "Joggers", "Trousers"].map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Quantity</label>
+              <input type="number" min="1" max="10" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })} className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Size</label>
+              <input value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value })} placeholder="e.g. M, L, XL" className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Color</label>
+              <input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} placeholder="e.g. Navy Blue" className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground">Description / Special Requirements</label>
+            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full mt-1 min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Fabric preferences, print details, etc." />
+          </div>
+          <button type="submit" className="btn-primary text-sm py-2">Submit Request</button>
+        </form>
+      )}
+      <div className="space-y-3">
+        {samples.length === 0 ? <p className="text-muted-foreground text-sm">No sample requests yet. Request your first sample above.</p> : samples.map((s) => (
+          <div key={s.id} className="bg-card border border-border rounded-lg p-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="font-medium text-foreground">{s.product_type}</p>
+                <p className="text-sm text-muted-foreground">Size: {s.size || "N/A"} • Color: {s.color || "N/A"} • Qty: {s.quantity}</p>
+                {s.description && <p className="text-sm text-foreground mt-1">{s.description}</p>}
+                {s.admin_feedback && <p className="text-sm text-accent mt-1 bg-accent/5 p-2 rounded">Feedback: {s.admin_feedback}</p>}
+                <p className="text-xs text-muted-foreground mt-2">{new Date(s.created_at).toLocaleDateString()}</p>
+              </div>
+              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor[s.status] || "bg-muted text-muted-foreground"}`}>{s.status.replace("_", " ")}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -199,18 +263,9 @@ const QuotesPage = ({ userId }: { userId: string }) => {
       </div>
       {showForm && (
         <form onSubmit={submitQuote} className="bg-card border border-border rounded-lg p-6 mb-6 space-y-4">
-          <div>
-            <label className="text-sm font-medium text-foreground">Product Type *</label>
-            <input value={form.product_type} onChange={(e) => setForm({ ...form, product_type: e.target.value })} required className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" placeholder="e.g. T-Shirts, Hoodies" />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground">Quantity</label>
-            <input value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" placeholder="e.g. 500 pcs" />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground">Details</label>
-            <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full mt-1 min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Fabric preferences, customization..." />
-          </div>
+          <div><label className="text-sm font-medium text-foreground">Product Type *</label><input value={form.product_type} onChange={(e) => setForm({ ...form, product_type: e.target.value })} required className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" placeholder="e.g. T-Shirts, Hoodies" /></div>
+          <div><label className="text-sm font-medium text-foreground">Quantity</label><input value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" placeholder="e.g. 500 pcs" /></div>
+          <div><label className="text-sm font-medium text-foreground">Details</label><textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full mt-1 min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Fabric preferences, customization..." /></div>
           <button type="submit" className="btn-primary text-sm py-2">Submit Quote</button>
         </form>
       )}
@@ -233,7 +288,6 @@ const QuotesPage = ({ userId }: { userId: string }) => {
 // Orders
 const OrdersPage = ({ userId }: { userId: string }) => {
   const [orders, setOrders] = useState<any[]>([]);
-
   useEffect(() => {
     supabase.from("orders").select("*").eq("user_id", userId).order("created_at", { ascending: false }).then(({ data }) => setOrders(data || []));
   }, [userId]);
@@ -254,11 +308,8 @@ const OrdersPage = ({ userId }: { userId: string }) => {
             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor[o.status] || ""}`}>{o.status.replace("_", " ")}</span>
           </div>
           {o.tracking_number && <p className="text-sm text-accent">Tracking: {o.tracking_number}</p>}
-          {/* Progress bar */}
           <div className="flex mt-4 gap-1">
-            {statusSteps.map((s, i) => (
-              <div key={s} className={`h-2 flex-1 rounded-full ${statusSteps.indexOf(o.status) >= i ? "bg-accent" : "bg-muted"}`} />
-            ))}
+            {statusSteps.map((s, i) => (<div key={s} className={`h-2 flex-1 rounded-full ${statusSteps.indexOf(o.status) >= i ? "bg-accent" : "bg-muted"}`} />))}
           </div>
           <div className="flex justify-between mt-1">
             {statusSteps.map((s) => <span key={s} className="text-[10px] text-muted-foreground capitalize">{s.replace("_", " ")}</span>)}
@@ -281,7 +332,6 @@ const MessagesPage = ({ userId }: { userId: string }) => {
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMsg.trim()) return;
-    // Use security definer function to get admin user_id (bypasses RLS on user_roles)
     const { data: adminId } = await supabase.rpc("get_admin_user_id");
     if (!adminId) { toast({ title: "No admin available yet. Please try again later.", variant: "destructive" }); return; }
     const { error } = await supabase.from("messages").insert({ sender_id: userId, receiver_id: adminId, content: newMsg });
@@ -340,12 +390,13 @@ const FilesPage = ({ userId }: { userId: string }) => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="font-heading text-xl font-bold text-foreground">My Files</h2>
+        <h2 className="font-heading text-xl font-bold text-foreground">My Files & Tech Packs</h2>
         <label className="btn-primary text-sm py-2 cursor-pointer">
           {uploading ? "Uploading..." : "Upload File"}
-          <input type="file" className="hidden" onChange={uploadFile} accept=".pdf,.zip,.png,.jpg,.jpeg" disabled={uploading} />
+          <input type="file" className="hidden" onChange={uploadFile} accept=".pdf,.zip,.png,.jpg,.jpeg,.ai,.eps,.svg" disabled={uploading} />
         </label>
       </div>
+      <p className="text-sm text-muted-foreground mb-4">Upload your tech packs, design specs, patterns, and reference files here. Supported formats: PDF, ZIP, PNG, JPG, AI, EPS, SVG.</p>
       <div className="space-y-3">
         {files.length === 0 ? <p className="text-muted-foreground text-sm">No files uploaded.</p> : files.map((f) => (
           <div key={f.id} className="bg-card border border-border rounded-lg p-4 flex justify-between items-center">
@@ -364,7 +415,6 @@ const FilesPage = ({ userId }: { userId: string }) => {
 // Invoices
 const InvoicesPage = ({ userId }: { userId: string }) => {
   const [invoices, setInvoices] = useState<any[]>([]);
-
   useEffect(() => {
     supabase.from("invoices").select("*").eq("user_id", userId).order("created_at", { ascending: false }).then(({ data }) => setInvoices(data || []));
   }, [userId]);
@@ -415,22 +465,10 @@ const ProfilePage = ({ userId }: { userId: string }) => {
     <div>
       <h2 className="font-heading text-xl font-bold text-foreground mb-6">Profile Settings</h2>
       <form onSubmit={save} className="bg-card border border-border rounded-lg p-6 max-w-lg space-y-4">
-        <div>
-          <label className="text-sm font-medium text-foreground">Full Name</label>
-          <input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-foreground">Email</label>
-          <input value={profile?.email || ""} disabled className="w-full mt-1 h-10 rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground" />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-foreground">Phone</label>
-          <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-foreground">Company</label>
-          <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
-        </div>
+        <div><label className="text-sm font-medium text-foreground">Full Name</label><input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" /></div>
+        <div><label className="text-sm font-medium text-foreground">Email</label><input value={profile?.email || ""} disabled className="w-full mt-1 h-10 rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground" /></div>
+        <div><label className="text-sm font-medium text-foreground">Phone</label><input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" /></div>
+        <div><label className="text-sm font-medium text-foreground">Company</label><input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" /></div>
         <button type="submit" disabled={saving} className="btn-primary text-sm py-2">{saving ? "Saving..." : "Save Changes"}</button>
       </form>
     </div>
