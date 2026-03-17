@@ -5,6 +5,8 @@ import productSportswear from "@/assets/product-sportswear.jpg";
 import productDenim from "@/assets/product-denim.jpg";
 import productJackets from "@/assets/product-jackets.jpg";
 import productPolo from "@/assets/product-polo.jpg";
+import productTrousers from "@/assets/product-trousers.jpg";
+import productShorts from "@/assets/product-shorts.jpg";
 
 const products = [
   { name: "T-Shirts", image: productTshirts },
@@ -13,6 +15,8 @@ const products = [
   { name: "Denim", image: productDenim },
   { name: "Jackets", image: productJackets },
   { name: "Polo Shirts", image: productPolo },
+  { name: "Trousers", image: productTrousers },
+  { name: "Shorts", image: productShorts },
 ];
 
 const ProductsPreview = () => (
