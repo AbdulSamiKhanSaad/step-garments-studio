@@ -32,9 +32,9 @@ const Footer = () => (
         <div>
           <h4 className="font-heading font-semibold text-lg mb-4">Contact</h4>
           <div className="flex flex-col gap-3 text-sm text-primary-foreground/70">
-            <div className="flex items-center gap-2"><Mail size={16} className="text-accent" /> info@stepgarments.com</div>
-            <div className="flex items-center gap-2"><Phone size={16} className="text-accent" /> +1 (555) 123-4567</div>
-            <div className="flex items-center gap-2"><MapPin size={16} className="text-accent" /> Global Operations</div>
+            <div className="flex items-center gap-2"><Mail size={16} className="text-accent" /> stepgarments@gmail.com</div>
+            <div className="flex items-center gap-2"><Phone size={16} className="text-accent" /> +92 (332) 855-6537</div>
+            <div className="flex items-center gap-2"><MapPin size={16} className="text-accent" /> Sialkot, Punjab, PK 51310</div>
           </div>
         </div>
       </div>
