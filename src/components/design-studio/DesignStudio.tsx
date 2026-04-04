@@ -771,7 +771,7 @@ const DesignStudio = () => {
         <div className="flex items-center gap-2">
           {selectedElement && (
             <>
-              <button onClick={rotateSelected} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Rotate 45°"><RotateCw className="w-4 h-4" /></button>
+              <button onClick={() => rotateSelected(45)} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Rotate 45°"><RotateCw className="w-4 h-4" /></button>
               <button onClick={() => rotateSelected(-45)} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Rotate -45°"><RotateCcw className="w-4 h-4" /></button>
               <button onClick={flipHorizontal} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Flip H"><FlipHorizontal className="w-4 h-4" /></button>
               <button onClick={flipVertical} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Flip V"><FlipVertical className="w-4 h-4" /></button>
