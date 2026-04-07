@@ -28,7 +28,8 @@ import avatarFemaleMedium from "@/assets/avatar-female-medium.png";
 import avatarMaleDark from "@/assets/avatar-male-dark.png";
 import avatarFemaleDark from "@/assets/avatar-female-dark.png";
 
-const GARMENTS = [
+const GARMENTS: { id: string; label: string; src: string | null; category: string }[] = [
+  { id: "none", label: "None (Blank)", src: null, category: "all" },
   { id: "tshirt", label: "T-Shirt", src: mockupTshirt, category: "tops" },
   { id: "hoodie", label: "Hoodie", src: mockupHoodie, category: "tops" },
   { id: "jacket", label: "Jacket", src: mockupJacket, category: "outerwear" },
@@ -211,6 +212,7 @@ const DesignStudio = () => {
 
   // Load garment image
   useEffect(() => {
+    if (!garment.src) { setGarmentImage(null); return; }
     const img = new window.Image();
     img.crossOrigin = "anonymous";
     img.src = garment.src;
@@ -704,7 +706,7 @@ const DesignStudio = () => {
     }
   };
 
-  const filteredGarments = garmentCategory === "all" ? GARMENTS : GARMENTS.filter(g => g.category === garmentCategory);
+  const filteredGarments = garmentCategory === "all" ? GARMENTS : GARMENTS.filter(g => g.category === garmentCategory || g.category === "all");
 
   const tabs = [
     { id: "garment", label: "Garment", icon: Shirt },

@@ -30,13 +30,18 @@ const ProductsPreview = () => (
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((p) => (
-          <Link to="/products" key={p.name} className="group relative overflow-hidden rounded-lg aspect-square">
-            <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-            <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6">
+        {products.map((p, i) => (
+          <Link
+            to="/products"
+            key={p.name}
+            className="group relative overflow-hidden rounded-xl aspect-square animate-fade-in"
+            style={{ animationDelay: `${i * 80}ms` }}
+          >
+            <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+            <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/10 to-transparent group-hover:from-foreground/90 transition-all duration-500" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 transform group-hover:translate-y-[-4px] transition-transform duration-300">
               <h3 className="font-heading text-xl font-bold text-primary-foreground">{p.name}</h3>
-              <span className="text-sm text-accent mt-1 inline-block group-hover:translate-x-1 transition-transform">View Collection →</span>
+              <span className="text-sm text-accent mt-1 inline-block opacity-0 group-hover:opacity-100 transition-opacity duration-300">View Collection →</span>
             </div>
           </Link>
         ))}
