@@ -229,10 +229,10 @@ const DesignStudio = () => {
   const [watermarkColor, setWatermarkColor] = useState("#000000");
   const [watermarkEnabled, setWatermarkEnabled] = useState(false);
   const [watermarkAngle, setWatermarkAngle] = useState(-30);
-  // Gradient background
-  const [useGradient, setUseGradient] = useState(false);
-  const [gradientColor1, setGradientColor1] = useState("#ff6b6b");
-  const [gradientColor2, setGradientColor2] = useState("#ffd93d");
+  // Blend background
+  const [useBlend, setUseBlend] = useState(false);
+  const [gradientColor1, setBlendColor1] = useState("#ff6b6b");
+  const [gradientColor2, setBlendColor2] = useState("#ffd93d");
   // Color filter
   const [colorFilter, setColorFilter] = useState<string | null>(null);
   // Drag drop garment
@@ -744,7 +744,7 @@ const DesignStudio = () => {
     { id: "clipart", label: "Clip Art", icon: Sticker },
     { id: "patterns", label: "Patterns", icon: Grid3X3 },
     { id: "watermark", label: "Watermark", icon: Shield },
-    { id: "gradient", label: "Gradient", icon: Gradient },
+    { id: "gradient", label: "Blend", icon: Blend },
     { id: "filters", label: "Filters", icon: Wand2 },
     { id: "sizing", label: "Sizing", icon: Ruler },
     { id: "layers", label: "Layers", icon: Layers },
@@ -1068,31 +1068,31 @@ const DesignStudio = () => {
             </div>
           )}
 
-          {/* Gradient Tab */}
+          {/* Blend Tab */}
           {activeTab === "gradient" && (
             <div className="bg-card border border-border rounded-lg p-3 space-y-2">
-              <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5"><Gradient className="w-3.5 h-3.5" /> Gradient Background</h3>
+              <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5"><Blend className="w-3.5 h-3.5" /> Blend Background</h3>
               <label className="flex items-center gap-2 text-[10px]">
-                <input type="checkbox" checked={useGradient} onChange={e => setUseGradient(e.target.checked)} className="rounded" />
-                <span className="font-medium text-foreground">Use Gradient</span>
+                <input type="checkbox" checked={useBlend} onChange={e => setUseBlend(e.target.checked)} className="rounded" />
+                <span className="font-medium text-foreground">Use Blend</span>
               </label>
-              {useGradient && (
+              {useBlend && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <div>
                       <span className="text-[9px] text-muted-foreground block mb-0.5">Start</span>
-                      <input type="color" value={gradientColor1} onChange={e => setGradientColor1(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
+                      <input type="color" value={gradientColor1} onChange={e => setBlendColor1(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
                     </div>
                     <div>
                       <span className="text-[9px] text-muted-foreground block mb-0.5">End</span>
-                      <input type="color" value={gradientColor2} onChange={e => setGradientColor2(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
+                      <input type="color" value={gradientColor2} onChange={e => setBlendColor2(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
                     </div>
                     <div className="flex-1 h-8 rounded-md" style={{ background: `linear-gradient(135deg, ${gradientColor1}, ${gradientColor2})` }} />
                   </div>
                   <p className="text-[9px] text-muted-foreground">Presets:</p>
                   <div className="grid grid-cols-3 gap-1">
                     {GRADIENT_PRESETS.map(g => (
-                      <button key={g.id} onClick={() => { setGradientColor1(g.colors[0]); setGradientColor2(g.colors[1]); }}
+                      <button key={g.id} onClick={() => { setBlendColor1(g.colors[0]); setBlendColor2(g.colors[1]); }}
                         className="h-8 rounded-md border border-border hover:border-accent/50 transition-colors"
                         style={{ background: `linear-gradient(135deg, ${g.colors[0]}, ${g.colors[1]})` }}
                         title={g.label} />
@@ -1230,8 +1230,8 @@ const DesignStudio = () => {
             </p>
             <div
               style={{
-                backgroundColor: useGradient ? undefined : "#f0f0f0",
-                background: useGradient ? `linear-gradient(135deg, ${gradientColor1}, ${gradientColor2})` : undefined,
+                backgroundColor: useBlend ? undefined : "#f0f0f0",
+                background: useBlend ? `linear-gradient(135deg, ${gradientColor1}, ${gradientColor2})` : undefined,
                 borderRadius: 8,
                 overflow: "hidden",
                 transform: view3D ? `rotateY(15deg) rotateX(5deg)` : `scale(${zoom})`,
@@ -1252,7 +1252,7 @@ const DesignStudio = () => {
                 }}
               >
                 <Layer>
-                  <Rect x={0} y={0} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill={useGradient ? "transparent" : garmentColor} name="garment-bg" />
+                  <Rect x={0} y={0} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill={useBlend ? "transparent" : garmentColor} name="garment-bg" />
                   {renderPattern()}
                   {avatarImage && (
                     <KonvaImage
