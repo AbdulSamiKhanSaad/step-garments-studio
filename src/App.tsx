@@ -12,6 +12,7 @@ import Process from "./pages/Process";
 import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
 import Auth from "./pages/Auth";
+import Lookbook from "./pages/Lookbook";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/process" element={<Process />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/faq" element={<FAQ />} />
+              <Route path="/lookbook" element={<Lookbook />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<CustomerDashboard />} />
               <Route path="/dashboard/quotes" element={<CustomerDashboard />} />
