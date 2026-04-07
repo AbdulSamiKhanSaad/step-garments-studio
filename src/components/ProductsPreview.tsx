@@ -7,6 +7,10 @@ import productJackets from "@/assets/product-jackets.jpg";
 import productPolo from "@/assets/product-polo.jpg";
 import productTrousers from "@/assets/product-trousers.jpg";
 import productShorts from "@/assets/product-shorts.jpg";
+import productCaps from "@/assets/product-caps.jpg";
+import productPuffer from "@/assets/product-puffer.jpg";
+import productLeggings from "@/assets/product-leggings.jpg";
+import productSwimwear from "@/assets/product-swimwear.jpg";
 
 const products = [
   { name: "T-Shirts", image: productTshirts },
@@ -17,6 +21,10 @@ const products = [
   { name: "Polo Shirts", image: productPolo },
   { name: "Trousers", image: productTrousers },
   { name: "Shorts", image: productShorts },
+  { name: "Caps & Hats", image: productCaps },
+  { name: "Puffer Jackets", image: productPuffer },
+  { name: "Leggings", image: productLeggings },
+  { name: "Swimwear", image: productSwimwear },
 ];
 
 const ProductsPreview = () => (
@@ -29,18 +37,18 @@ const ProductsPreview = () => (
           We manufacture a wide range of garments for every market segment.
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
         {products.map((p, i) => (
           <Link
             to="/products"
             key={p.name}
             className="group relative overflow-hidden rounded-xl aspect-square animate-fade-in"
-            style={{ animationDelay: `${i * 80}ms` }}
+            style={{ animationDelay: `${i * 60}ms` }}
           >
             <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
             <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/10 to-transparent group-hover:from-foreground/90 transition-all duration-500" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 transform group-hover:translate-y-[-4px] transition-transform duration-300">
-              <h3 className="font-heading text-xl font-bold text-primary-foreground">{p.name}</h3>
+            <div className="absolute bottom-0 left-0 right-0 p-4 transform group-hover:translate-y-[-4px] transition-transform duration-300">
+              <h3 className="font-heading text-lg font-bold text-primary-foreground">{p.name}</h3>
               <span className="text-sm text-accent mt-1 inline-block opacity-0 group-hover:opacity-100 transition-opacity duration-300">View Collection →</span>
             </div>
           </Link>
