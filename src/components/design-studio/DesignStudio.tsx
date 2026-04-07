@@ -8,7 +8,7 @@ import {
   ImagePlus, X, Layers, Eye, EyeOff, Lock, Unlock, Copy, AlignLeft, AlignCenter,
   AlignRight, ArrowUp, ArrowDown, Undo2, Redo2, ZoomIn, ZoomOut, Grid3X3,
   Ruler, Shirt, User, Sparkles, Settings2, RotateCcw, Paintbrush, Square,
-  CircleIcon, Triangle, PenTool, Droplets, Shield, Gradient, Wand2
+  CircleIcon, Triangle, PenTool, Droplets, Shield, Blend, Wand2
 } from "lucide-react";
 
 import mockupTshirt from "@/assets/mockup-tshirt.png";
