@@ -19,6 +19,12 @@ import productTrousers from "@/assets/product-trousers.jpg";
 import productShorts from "@/assets/product-shorts.jpg";
 import productTanktops from "@/assets/product-tanktops.jpg";
 import productJoggers from "@/assets/product-joggers.jpg";
+import productDressshirts from "@/assets/product-dressshirts.jpg";
+import productPuffer from "@/assets/product-puffer.jpg";
+import productCargopants from "@/assets/product-cargopants.jpg";
+import productSwimwear from "@/assets/product-swimwear.jpg";
+import productLeggings from "@/assets/product-leggings.jpg";
+import productCaps from "@/assets/product-caps.jpg";
 import serviceFabric from "@/assets/service-fabric.jpg";
 import heroFactory from "@/assets/hero-factory.jpg";
 
@@ -45,6 +51,18 @@ import galleryTanktops2 from "@/assets/gallery-tanktops-2.jpg";
 import galleryTanktops3 from "@/assets/gallery-tanktops-3.jpg";
 import galleryJoggers2 from "@/assets/gallery-joggers-2.jpg";
 import galleryJoggers3 from "@/assets/gallery-joggers-3.jpg";
+import galleryDressshirts2 from "@/assets/gallery-dressshirts-2.jpg";
+import galleryDressshirts3 from "@/assets/gallery-dressshirts-3.jpg";
+import galleryPuffer2 from "@/assets/gallery-puffer-2.jpg";
+import galleryPuffer3 from "@/assets/gallery-puffer-3.jpg";
+import galleryCargopants2 from "@/assets/gallery-cargopants-2.jpg";
+import galleryCargopants3 from "@/assets/gallery-cargopants-3.jpg";
+import gallerySwimwear2 from "@/assets/gallery-swimwear-2.jpg";
+import gallerySwimwear3 from "@/assets/gallery-swimwear-3.jpg";
+import galleryLeggings2 from "@/assets/gallery-leggings-2.jpg";
+import galleryLeggings3 from "@/assets/gallery-leggings-3.jpg";
+import galleryCaps2 from "@/assets/gallery-caps-2.jpg";
+import galleryCaps3 from "@/assets/gallery-caps-3.jpg";
 
 const categoryNav = [
   { name: "T-Shirts", image: productTshirts, id: "tshirts" },
@@ -59,6 +77,12 @@ const categoryNav = [
   { name: "Shorts", image: productShorts, id: "shorts" },
   { name: "Tank Tops", image: productTanktops, id: "tanktops" },
   { name: "Joggers", image: productJoggers, id: "joggers" },
+  { name: "Dress Shirts", image: productDressshirts, id: "dressshirts" },
+  { name: "Puffer Jackets", image: productPuffer, id: "puffer" },
+  { name: "Cargo Pants", image: productCargopants, id: "cargopants" },
+  { name: "Swimwear", image: productSwimwear, id: "swimwear" },
+  { name: "Leggings", image: productLeggings, id: "leggings" },
+  { name: "Caps & Hats", image: productCaps, id: "caps" },
 ];
 
 const products = [
@@ -68,14 +92,20 @@ const products = [
   { id: "jackets", name: "Jackets & Outerwear", image: productJackets, gallery: [productJackets, galleryJackets2, galleryJackets3], desc: "From bomber jackets to windbreakers, premium outerwear with expert construction and finishing.", fabrics: ["Nylon", "Polyester Shell", "Cotton Canvas", "Faux Leather"], customization: ["Embroidery", "Patches", "Custom Lining", "Custom Zippers"], moq: "100 pcs" },
   { id: "sportswear", name: "Sportswear & Activewear", image: productSportswear, gallery: [productSportswear, gallerySportswear2, gallerySportswear3], desc: "Performance-driven sportswear engineered for comfort and durability. Moisture-wicking, breathable, and stylish.", fabrics: ["Dri-Fit Polyester", "Spandex Blend", "Nylon Mesh", "Compression Fabric"], customization: ["Sublimation Print", "Heat Transfer", "Reflective Details", "Performance Labels"], moq: "200 pcs" },
   { id: "streetwear", name: "Streetwear Collection", image: productStreetwear, gallery: [productStreetwear, galleryHoodies2, galleryTshirts2], desc: "Bold, trend-forward streetwear for urban fashion brands. Oversized fits, premium fabrics, and statement designs.", fabrics: ["Heavy Cotton", "French Terry", "Distressed Denim", "Washed Fleece"], customization: ["Screen Print", "Puff Print", "Embroidery", "Vintage Wash"], moq: "200 pcs" },
-  { id: "denim", name: "Premium Denim", image: productDenim, gallery: [productDenim, galleryDenim2, galleryDenim3], desc: "Premium denim jeans and jackets with expert washes, distressing, and finishing. From raw selvedge to stretch denim.", fabrics: ["Raw Denim", "Stretch Denim", "Selvedge", "Organic Denim"], customization: ["Custom Washes", "Distressing", "Embroidery", "Leather Patches"], moq: "300 pcs" },
-  { id: "polo", name: "Polo Shirts", image: productPolo, gallery: [productPolo, galleryPolo2, galleryPolo3], desc: "Classic and modern polo shirts for corporate wear, golf brands, and fashion labels. Premium piqué and performance fabrics.", fabrics: ["Piqué Cotton", "Performance Polyester", "Cotton/Lycra", "CoolMax"], customization: ["Embroidery", "Tipping Customization", "Custom Buttons", "Woven Labels"], moq: "200 pcs" },
-  { id: "uniforms", name: "Corporate Uniforms", image: productPolo, gallery: [productPolo, galleryUniforms2, galleryPolo2], desc: "Professional uniforms for hospitality, healthcare, corporate, and industrial sectors. Durable and brand-aligned.", fabrics: ["Poly/Cotton Twill", "Performance Polyester", "Stretch Poplin", "Antimicrobial"], customization: ["Logo Embroidery", "Name Tags", "Custom Pockets", "Reflective Strips"], moq: "100 pcs" },
+  { id: "denim", name: "Premium Denim", image: productDenim, gallery: [productDenim, galleryDenim2, galleryDenim3], desc: "Premium denim jeans and jackets with expert washes, distressing, and finishing.", fabrics: ["Raw Denim", "Stretch Denim", "Selvedge", "Organic Denim"], customization: ["Custom Washes", "Distressing", "Embroidery", "Leather Patches"], moq: "300 pcs" },
+  { id: "polo", name: "Polo Shirts", image: productPolo, gallery: [productPolo, galleryPolo2, galleryPolo3], desc: "Classic and modern polo shirts for corporate wear, golf brands, and fashion labels.", fabrics: ["Piqué Cotton", "Performance Polyester", "Cotton/Lycra", "CoolMax"], customization: ["Embroidery", "Tipping Customization", "Custom Buttons", "Woven Labels"], moq: "200 pcs" },
+  { id: "uniforms", name: "Corporate Uniforms", image: productPolo, gallery: [productPolo, galleryUniforms2, galleryPolo2], desc: "Professional uniforms for hospitality, healthcare, corporate, and industrial sectors.", fabrics: ["Poly/Cotton Twill", "Performance Polyester", "Stretch Poplin", "Antimicrobial"], customization: ["Logo Embroidery", "Name Tags", "Custom Pockets", "Reflective Strips"], moq: "100 pcs" },
   { id: "kidswear", name: "Kids Wear", image: productTshirts, gallery: [productTshirts, galleryKidswear2, galleryTshirts2], desc: "Safe, comfortable, and stylish children's clothing. All fabrics meet international safety standards.", fabrics: ["100% Organic Cotton", "BCI Cotton", "Bamboo Blend", "Soft Jersey"], customization: ["Screen Print", "Appliqué", "Embroidery", "Snap Buttons"], moq: "300 pcs" },
-  { id: "trousers", name: "Trousers & Chinos", image: productTrousers, gallery: [productTrousers, galleryTrousers2, galleryTrousers3], desc: "Premium cargo pants, chinos, and casual trousers. Crafted for durability with modern fits and versatile styling.", fabrics: ["Cotton Twill", "Stretch Cotton", "Canvas", "Ripstop"], customization: ["Custom Washes", "Embroidery", "Cargo Pockets", "Custom Hardware"], moq: "200 pcs" },
+  { id: "trousers", name: "Trousers & Chinos", image: productTrousers, gallery: [productTrousers, galleryTrousers2, galleryTrousers3], desc: "Premium cargo pants, chinos, and casual trousers. Crafted for durability with modern fits.", fabrics: ["Cotton Twill", "Stretch Cotton", "Canvas", "Ripstop"], customization: ["Custom Washes", "Embroidery", "Cargo Pockets", "Custom Hardware"], moq: "200 pcs" },
   { id: "shorts", name: "Shorts & Board Shorts", image: productShorts, gallery: [productShorts, galleryShorts2, galleryShorts3], desc: "Athletic shorts, swim trunks, and casual board shorts. Performance fabrics with quick-dry technology.", fabrics: ["Polyester Mesh", "Nylon Taslan", "Stretch Woven", "Quick-Dry Blend"], customization: ["Sublimation Print", "Embroidery", "Custom Drawstrings", "Zip Pockets"], moq: "200 pcs" },
-  { id: "tanktops", name: "Tank Tops & Vests", image: productTanktops, gallery: [productTanktops, galleryTanktops2, galleryTanktops3], desc: "Gym tanks, fashion vests, and performance sleeveless tops for men and women. Breathable and lightweight.", fabrics: ["Cotton Jersey", "Performance Mesh", "Bamboo Blend", "Dri-Fit"], customization: ["Screen Print", "DTG Print", "Embroidery", "Custom Labels"], moq: "200 pcs" },
-  { id: "joggers", name: "Joggers & Sweatpants", image: productJoggers, gallery: [productJoggers, galleryJoggers2, galleryJoggers3], desc: "Premium joggers and sweatpants with fleece lining. Perfect for athleisure brands and streetwear collections.", fabrics: ["French Terry", "Fleece", "Tech Fleece", "Cotton/Polyester"], customization: ["Embroidery", "Screen Print", "Custom Waistband", "Tapered Fit"], moq: "150 pcs" },
+  { id: "tanktops", name: "Tank Tops & Vests", image: productTanktops, gallery: [productTanktops, galleryTanktops2, galleryTanktops3], desc: "Gym tanks, fashion vests, and performance sleeveless tops. Breathable and lightweight.", fabrics: ["Cotton Jersey", "Performance Mesh", "Bamboo Blend", "Dri-Fit"], customization: ["Screen Print", "DTG Print", "Embroidery", "Custom Labels"], moq: "200 pcs" },
+  { id: "joggers", name: "Joggers & Sweatpants", image: productJoggers, gallery: [productJoggers, galleryJoggers2, galleryJoggers3], desc: "Premium joggers and sweatpants with fleece lining. Perfect for athleisure and streetwear.", fabrics: ["French Terry", "Fleece", "Tech Fleece", "Cotton/Polyester"], customization: ["Embroidery", "Screen Print", "Custom Waistband", "Tapered Fit"], moq: "150 pcs" },
+  { id: "dressshirts", name: "Dress Shirts & Formal", image: productDressshirts, gallery: [productDressshirts, galleryDressshirts2, galleryDressshirts3], desc: "Premium formal and business dress shirts. Expert tailoring with luxury fabrics and finishing.", fabrics: ["Egyptian Cotton", "Poplin", "Oxford Cloth", "Twill Weave"], customization: ["Embroidery", "Custom Buttons", "Monogramming", "Collar Styles"], moq: "150 pcs" },
+  { id: "puffer", name: "Puffer & Down Jackets", image: productPuffer, gallery: [productPuffer, galleryPuffer2, galleryPuffer3], desc: "Insulated puffer jackets with premium fill. Perfect for winter collections and outdoor brands.", fabrics: ["Ripstop Nylon", "Recycled Polyester", "Down Fill", "Synthetic Insulation"], customization: ["Custom Quilting", "Embroidery", "Reflective Trims", "Custom Hardware"], moq: "100 pcs" },
+  { id: "cargopants", name: "Cargo Pants", image: productCargopants, gallery: [productCargopants, galleryCargopants2, galleryCargopants3], desc: "Military-inspired cargo pants with functional pockets. Durable construction for workwear and fashion.", fabrics: ["Cotton Canvas", "Ripstop", "Stretch Twill", "Nylon Blend"], customization: ["Custom Pockets", "Distressing", "Embroidery", "Custom Hardware"], moq: "200 pcs" },
+  { id: "swimwear", name: "Swimwear & Beachwear", image: productSwimwear, gallery: [productSwimwear, gallerySwimwear2, gallerySwimwear3], desc: "Board shorts, swim trunks, and resort wear. Quick-dry fabrics with vibrant sublimation prints.", fabrics: ["Quick-Dry Polyester", "Recycled Nylon", "Spandex Blend", "Board Short Fabric"], customization: ["Sublimation Print", "Custom Drawstrings", "Inner Mesh", "Branded Labels"], moq: "200 pcs" },
+  { id: "leggings", name: "Leggings & Tights", image: productLeggings, gallery: [productLeggings, galleryLeggings2, galleryLeggings3], desc: "High-performance compression leggings and yoga tights for fitness and athleisure brands.", fabrics: ["Spandex/Polyester", "Nylon Blend", "Compression Fabric", "Moisture-Wicking"], customization: ["Sublimation Print", "Custom Waistband", "Pocket Options", "Seamless Construction"], moq: "200 pcs" },
+  { id: "caps", name: "Caps & Headwear", image: productCaps, gallery: [productCaps, galleryCaps2, galleryCaps3], desc: "Snapbacks, dad hats, beanies, and bucket hats. Custom embroidery, patches, and branding.", fabrics: ["Cotton Twill", "Polyester Mesh", "Acrylic Knit", "Corduroy"], customization: ["3D Embroidery", "Flat Embroidery", "Woven Patches", "Custom Closures"], moq: "200 pcs" },
 ];
 
 const Products = () => {
