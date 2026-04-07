@@ -706,7 +706,7 @@ const DesignStudio = () => {
     }
   };
 
-  const filteredGarments = garmentCategory === "all" ? GARMENTS : GARMENTS.filter(g => g.category === garmentCategory);
+  const filteredGarments = garmentCategory === "all" ? GARMENTS : GARMENTS.filter(g => g.category === garmentCategory || g.category === "all");
 
   const tabs = [
     { id: "garment", label: "Garment", icon: Shirt },
