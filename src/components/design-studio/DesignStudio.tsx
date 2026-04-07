@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Stage, Layer, Image as KonvaImage, Text as KonvaText, Transformer, Rect, Circle, Line, Ring } from "react-konva";
+import { Stage, Layer, Image as KonvaImage, Text as KonvaText, Transformer, Rect, Circle, Line } from "react-konva";
 import Konva from "konva";
 import { jsPDF } from "jspdf";
 import {
   Palette, Type, Upload, RotateCw, Download, Trash2, Save, Clock,
-  ChevronDown, ChevronRight, FlipHorizontal, FlipVertical, Sticker, HelpCircle, Camera,
+  ChevronDown, FlipHorizontal, FlipVertical, Sticker, HelpCircle, Camera,
   ImagePlus, X, Layers, Eye, EyeOff, Lock, Unlock, Copy, AlignLeft, AlignCenter,
   AlignRight, ArrowUp, ArrowDown, Undo2, Redo2, ZoomIn, ZoomOut, Grid3X3,
-  Ruler, Shirt, User, Maximize2, Minimize2, Pipette, Sparkles, Settings2,
-  Move, RotateCcw, Paintbrush, Square, CircleIcon, Triangle, Hexagon, PenTool
+  Ruler, Shirt, User, Sparkles, Settings2, RotateCcw, Paintbrush, Square,
+  CircleIcon, Triangle, PenTool, Droplets, Shield, Gradient, Wand2
 } from "lucide-react";
 
 import mockupTshirt from "@/assets/mockup-tshirt.png";
@@ -20,6 +20,9 @@ import mockupTanktop from "@/assets/mockup-tanktop.png";
 import mockupShorts from "@/assets/mockup-shorts.png";
 import mockupJoggers from "@/assets/mockup-joggers.png";
 import mockupSweatshirt from "@/assets/mockup-sweatshirt.png";
+import mockupCap from "@/assets/mockup-cap.png";
+import mockupDressshirt from "@/assets/mockup-dressshirt.png";
+import mockupLeggings from "@/assets/mockup-leggings.png";
 
 import avatarMaleLight from "@/assets/avatar-male-light.png";
 import avatarFemaleLight from "@/assets/avatar-female-light.png";
@@ -39,6 +42,9 @@ const GARMENTS: { id: string; label: string; src: string | null; category: strin
   { id: "shorts", label: "Shorts", src: mockupShorts, category: "bottoms" },
   { id: "joggers", label: "Joggers", src: mockupJoggers, category: "bottoms" },
   { id: "sweatshirt", label: "Sweatshirt", src: mockupSweatshirt, category: "tops" },
+  { id: "cap", label: "Cap / Hat", src: mockupCap, category: "accessories" },
+  { id: "dressshirt", label: "Dress Shirt", src: mockupDressshirt, category: "tops" },
+  { id: "leggings", label: "Leggings", src: mockupLeggings, category: "bottoms" },
 ];
 
 const AVATARS = [
@@ -63,6 +69,8 @@ const FABRICS = [
   { id: "denim", label: "Denim Twill", weight: "350 GSM" },
   { id: "linen", label: "Linen Blend", weight: "160 GSM" },
   { id: "nylon", label: "Ripstop Nylon", weight: "120 GSM" },
+  { id: "spandex", label: "Spandex/Lycra", weight: "190 GSM" },
+  { id: "modal", label: "Modal Jersey", weight: "155 GSM" },
 ];
 
 const GARMENT_COLORS = [
@@ -104,19 +112,30 @@ const PATTERNS = [
   { id: "grid", label: "Grid" },
   { id: "zigzag", label: "Zigzag" },
   { id: "diamond", label: "Diamond" },
+  { id: "houndstooth", label: "Houndstooth" },
+  { id: "camo", label: "Camouflage" },
+];
+
+const GRADIENT_PRESETS = [
+  { id: "sunset", label: "Sunset", colors: ["#ff6b6b", "#ffd93d"] },
+  { id: "ocean", label: "Ocean", colors: ["#2ec4b6", "#0f3460"] },
+  { id: "purple", label: "Purple Haze", colors: ["#6c5ce7", "#a29bfe"] },
+  { id: "forest", label: "Forest", colors: ["#00b894", "#264653"] },
+  { id: "fire", label: "Fire", colors: ["#e94560", "#ffd93d"] },
+  { id: "midnight", label: "Midnight", colors: ["#1a1a2e", "#533483"] },
 ];
 
 const TIPS = [
   "💡 Click any element to select it, then drag to reposition.",
-  "💡 Use corner handles to resize. Hold edges to stretch.",
-  "💡 Flip elements horizontally or vertically for mirrored designs.",
+  "💡 Use the Watermark tab to add semi-transparent branding to your designs.",
+  "💡 Drag garments from the sidebar directly onto the avatar for fitting.",
   "💡 Use Ctrl+Z / Ctrl+Y to undo/redo actions.",
   "💡 Use the Layers panel to manage element ordering and visibility.",
-  "💡 Try adding patterns as background textures for unique designs.",
+  "💡 Try gradient backgrounds for unique professional designs.",
   "💡 Choose an avatar to preview how your design looks on a person.",
   "💡 Set sizing and fabric options for production-ready specs.",
   "💡 Use alignment tools to precisely position elements.",
-  "💡 Adjust element opacity for creative overlay effects.",
+  "💡 Apply color filters to give your design a unique mood.",
 ];
 
 interface DesignElement {
@@ -189,7 +208,6 @@ const DesignStudio = () => {
   const [avatarImage, setAvatarImage] = useState<HTMLImageElement | null>(null);
   const [undoStack, setUndoStack] = useState<DesignElement[][]>([]);
   const [redoStack, setRedoStack] = useState<DesignElement[][]>([]);
-  const [showLayers, setShowLayers] = useState(false);
   const [selectedPattern, setSelectedPattern] = useState<string | null>(null);
   const [patternColor, setPatternColor] = useState("#000000");
   const [patternSize, setPatternSize] = useState(20);
@@ -204,13 +222,27 @@ const DesignStudio = () => {
   const [shapeStrokeColor, setShapeStrokeColor] = useState("#000000");
   const [view3D, setView3D] = useState(false);
   const [garmentCategory, setGarmentCategory] = useState("all");
+  // Watermark state
+  const [watermarkText, setWatermarkText] = useState("");
+  const [watermarkOpacity, setWatermarkOpacity] = useState(15);
+  const [watermarkSize, setWatermarkSize] = useState(32);
+  const [watermarkColor, setWatermarkColor] = useState("#000000");
+  const [watermarkEnabled, setWatermarkEnabled] = useState(false);
+  const [watermarkAngle, setWatermarkAngle] = useState(-30);
+  // Gradient background
+  const [useGradient, setUseGradient] = useState(false);
+  const [gradientColor1, setGradientColor1] = useState("#ff6b6b");
+  const [gradientColor2, setGradientColor2] = useState("#ffd93d");
+  // Color filter
+  const [colorFilter, setColorFilter] = useState<string | null>(null);
+  // Drag drop garment
+  const [dragGarment, setDragGarment] = useState<string | null>(null);
 
   const stageRef = useRef<Konva.Stage>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
-  // Load garment image
   useEffect(() => {
     if (!garment.src) { setGarmentImage(null); return; }
     const img = new window.Image();
@@ -219,7 +251,6 @@ const DesignStudio = () => {
     img.onload = () => setGarmentImage(img);
   }, [garment]);
 
-  // Load avatar image
   useEffect(() => {
     if (!selectedAvatar) { setAvatarImage(null); return; }
     const av = AVATARS.find(a => a.id === selectedAvatar);
@@ -230,13 +261,11 @@ const DesignStudio = () => {
     img.onload = () => setAvatarImage(img);
   }, [selectedAvatar]);
 
-  // Load saved designs
   useEffect(() => {
     const saved = localStorage.getItem("step-garments-designs");
     if (saved) setSavedDesigns(JSON.parse(saved));
   }, []);
 
-  // Transformer
   useEffect(() => {
     if (!transformerRef.current || !stageRef.current) return;
     const el = elements.find(e => e.id === selectedId);
@@ -250,13 +279,11 @@ const DesignStudio = () => {
     transformerRef.current.getLayer()?.batchDraw();
   }, [selectedId, elements]);
 
-  // Update opacity when selection changes
   useEffect(() => {
     const el = elements.find(e => e.id === selectedId);
     if (el) setElementOpacity((el.opacity ?? 1) * 100);
   }, [selectedId]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
@@ -341,19 +368,10 @@ const DesignStudio = () => {
   const addClipArt = (emoji: string) => {
     pushHistory();
     const newEl: DesignElement = {
-      id: `text-${Date.now()}`,
-      type: "text",
-      x: CANVAS_WIDTH / 2 - 30,
-      y: CANVAS_HEIGHT / 2 - 30,
-      rotation: 0,
-      text: emoji,
-      fontSize: 64,
-      fontFamily: "Arial",
-      fill: "#000000",
-      opacity: 1,
-      visible: true,
-      locked: false,
-      name: `Sticker`,
+      id: `text-${Date.now()}`, type: "text",
+      x: CANVAS_WIDTH / 2 - 30, y: CANVAS_HEIGHT / 2 - 30,
+      rotation: 0, text: emoji, fontSize: 64, fontFamily: "Arial",
+      fill: "#000000", opacity: 1, visible: true, locked: false, name: "Sticker",
     };
     setElements(prev => [...prev, newEl]);
     setSelectedId(newEl.id);
@@ -362,20 +380,11 @@ const DesignStudio = () => {
   const addShape = (shapeType: "rect" | "circle" | "triangle" | "line") => {
     pushHistory();
     const newEl: DesignElement = {
-      id: `shape-${Date.now()}`,
-      type: "shape",
-      shapeType,
-      x: CANVAS_WIDTH / 2 - 40,
-      y: CANVAS_HEIGHT / 2 - 40,
-      width: 80,
-      height: 80,
-      rotation: 0,
-      fill: shapeColor,
-      stroke: shapeStrokeColor,
-      strokeWidth: 2,
-      opacity: 1,
-      visible: true,
-      locked: false,
+      id: `shape-${Date.now()}`, type: "shape", shapeType,
+      x: CANVAS_WIDTH / 2 - 40, y: CANVAS_HEIGHT / 2 - 40,
+      width: 80, height: 80, rotation: 0,
+      fill: shapeColor, stroke: shapeStrokeColor, strokeWidth: 2,
+      opacity: 1, visible: true, locked: false,
       name: shapeType.charAt(0).toUpperCase() + shapeType.slice(1),
     };
     setElements(prev => [...prev, newEl]);
@@ -393,8 +402,7 @@ const DesignStudio = () => {
       img.onload = () => {
         const scale = Math.min(150 / img.width, 150 / img.height);
         const newEl: DesignElement = {
-          id: `img-${Date.now()}`,
-          type: "image",
+          id: `img-${Date.now()}`, type: "image",
           x: CANVAS_WIDTH / 2 - (img.width * scale) / 2,
           y: CANVAS_HEIGHT / 2 - (img.height * scale) / 2,
           width: img.width, height: img.height,
@@ -467,13 +475,7 @@ const DesignStudio = () => {
     const el = elements.find(e => e.id === selectedId);
     if (!el) return;
     pushHistory();
-    const newEl: DesignElement = {
-      ...el,
-      id: `${el.type}-${Date.now()}`,
-      x: el.x + 20,
-      y: el.y + 20,
-      name: `${el.name || ""} Copy`,
-    };
+    const newEl: DesignElement = { ...el, id: `${el.type}-${Date.now()}`, x: el.x + 20, y: el.y + 20, name: `${el.name || ""} Copy` };
     if (newEl.type === "image" && newEl.imageSrc) {
       const img = new window.Image();
       img.src = newEl.imageSrc;
@@ -494,13 +496,8 @@ const DesignStudio = () => {
     setElements(arr);
   };
 
-  const toggleVisibility = (id: string) => {
-    updateElements(elements.map(el => el.id === id ? { ...el, visible: !(el.visible ?? true) } : el));
-  };
-
-  const toggleLock = (id: string) => {
-    updateElements(elements.map(el => el.id === id ? { ...el, locked: !el.locked } : el));
-  };
+  const toggleVisibility = (id: string) => { updateElements(elements.map(el => el.id === id ? { ...el, visible: !(el.visible ?? true) } : el)); };
+  const toggleLock = (id: string) => { updateElements(elements.map(el => el.id === id ? { ...el, locked: !el.locked } : el)); };
 
   const updateOpacity = (val: number) => {
     if (!selectedId) return;
@@ -605,7 +602,31 @@ const DesignStudio = () => {
     setSelectedId(null);
   };
 
-  // Pattern rendering
+  // Watermark rendering
+  const renderWatermark = () => {
+    if (!watermarkEnabled || !watermarkText) return null;
+    const marks: React.ReactNode[] = [];
+    const gap = watermarkSize * 4;
+    for (let x = -200; x < CANVAS_WIDTH + 200; x += gap) {
+      for (let y = -200; y < CANVAS_HEIGHT + 200; y += gap) {
+        marks.push(
+          <KonvaText
+            key={`wm-${x}-${y}`}
+            x={x} y={y}
+            text={watermarkText}
+            fontSize={watermarkSize}
+            fontFamily="Arial"
+            fill={watermarkColor}
+            opacity={watermarkOpacity / 100}
+            rotation={watermarkAngle}
+            listening={false}
+          />
+        );
+      }
+    }
+    return marks;
+  };
+
   const renderPattern = () => {
     if (!selectedPattern) return null;
     const shapes: React.ReactNode[] = [];
@@ -631,6 +652,16 @@ const DesignStudio = () => {
           case "diamond":
             if ((Math.floor(x / s) + Math.floor(y / s)) % 2 === 0)
               shapes.push(<Line key={key} points={[x + s / 2, y, x + s, y + s / 2, x + s / 2, y + s, x, y + s / 2]} closed fill={color} opacity={opacity} listening={false} />);
+            break;
+          case "houndstooth":
+            if ((Math.floor(x / s) + Math.floor(y / s)) % 2 === 0) {
+              shapes.push(<Rect key={key} x={x} y={y} width={s / 2} height={s / 2} fill={color} opacity={opacity} listening={false} />);
+              shapes.push(<Rect key={`ht2-${x}-${y}`} x={x + s / 2} y={y + s / 2} width={s / 2} height={s / 2} fill={color} opacity={opacity} listening={false} />);
+            }
+            break;
+          case "camo":
+            if (Math.random() > 0.5)
+              shapes.push(<Circle key={key} x={x + Math.random() * s} y={y + Math.random() * s} radius={s / 3 + Math.random() * s / 4} fill={color} opacity={opacity * 0.7} listening={false} />);
             break;
         }
       }
@@ -677,32 +708,28 @@ const DesignStudio = () => {
 
   const renderShape = (el: DesignElement) => {
     const common = {
-      id: el.id,
-      x: el.x,
-      y: el.y,
-      rotation: el.rotation,
-      scaleX: el.scaleX || 1,
-      scaleY: el.scaleY || 1,
-      opacity: el.opacity ?? 1,
-      draggable: !el.locked,
-      onClick: () => setSelectedId(el.id),
-      onTap: () => setSelectedId(el.id),
+      id: el.id, x: el.x, y: el.y, rotation: el.rotation,
+      scaleX: el.scaleX || 1, scaleY: el.scaleY || 1,
+      opacity: el.opacity ?? 1, draggable: !el.locked,
+      onClick: () => setSelectedId(el.id), onTap: () => setSelectedId(el.id),
       onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => handleDragEnd(el.id, e),
       onTransformEnd: (e: Konva.KonvaEventObject<Event>) => handleTransformEnd(el.id, e),
     };
     switch (el.shapeType) {
-      case "rect":
-        return <Rect key={el.id} {...common} width={el.width || 80} height={el.height || 80} fill={el.fill} stroke={el.stroke} strokeWidth={el.strokeWidth} />;
-      case "circle":
-        return <Circle key={el.id} {...common} radius={(el.width || 80) / 2} fill={el.fill} stroke={el.stroke} strokeWidth={el.strokeWidth} />;
-      case "triangle":
-        const w = el.width || 80;
-        const h = el.height || 80;
-        return <Line key={el.id} {...common} points={[w / 2, 0, w, h, 0, h]} closed fill={el.fill} stroke={el.stroke} strokeWidth={el.strokeWidth} />;
-      case "line":
-        return <Line key={el.id} {...common} points={[0, 0, el.width || 100, 0]} stroke={el.stroke || el.fill} strokeWidth={el.strokeWidth || 3} />;
-      default:
-        return null;
+      case "rect": return <Rect key={el.id} {...common} width={el.width || 80} height={el.height || 80} fill={el.fill} stroke={el.stroke} strokeWidth={el.strokeWidth} />;
+      case "circle": return <Circle key={el.id} {...common} radius={(el.width || 80) / 2} fill={el.fill} stroke={el.stroke} strokeWidth={el.strokeWidth} />;
+      case "triangle": return <Line key={el.id} {...common} points={[(el.width || 80) / 2, 0, el.width || 80, el.height || 80, 0, el.height || 80]} closed fill={el.fill} stroke={el.stroke} strokeWidth={el.strokeWidth} />;
+      case "line": return <Line key={el.id} {...common} points={[0, 0, el.width || 100, 0]} stroke={el.stroke || el.fill} strokeWidth={el.strokeWidth || 3} />;
+      default: return null;
+    }
+  };
+
+  const handleGarmentDragStart = (garmentId: string) => { setDragGarment(garmentId); };
+  const handleCanvasDrop = () => {
+    if (dragGarment) {
+      const g = GARMENTS.find(g => g.id === dragGarment);
+      if (g) setGarment(g);
+      setDragGarment(null);
     }
   };
 
@@ -716,6 +743,9 @@ const DesignStudio = () => {
     { id: "shapes", label: "Shapes", icon: Square },
     { id: "clipart", label: "Clip Art", icon: Sticker },
     { id: "patterns", label: "Patterns", icon: Grid3X3 },
+    { id: "watermark", label: "Watermark", icon: Shield },
+    { id: "gradient", label: "Gradient", icon: Gradient },
+    { id: "filters", label: "Filters", icon: Wand2 },
     { id: "sizing", label: "Sizing", icon: Ruler },
     { id: "layers", label: "Layers", icon: Layers },
     { id: "actions", label: "Actions", icon: Settings2 },
@@ -723,9 +753,17 @@ const DesignStudio = () => {
 
   const selectedElement = elements.find(e => e.id === selectedId);
 
+  const canvasFilterStyle = colorFilter ? {
+    filter: colorFilter === "grayscale" ? "grayscale(100%)" :
+      colorFilter === "sepia" ? "sepia(80%)" :
+      colorFilter === "warm" ? "saturate(1.3) hue-rotate(-10deg)" :
+      colorFilter === "cool" ? "saturate(0.8) hue-rotate(20deg)" :
+      colorFilter === "vintage" ? "sepia(40%) contrast(1.1) brightness(0.9)" :
+      colorFilter === "vivid" ? "saturate(1.8) contrast(1.1)" : "none"
+  } : {};
+
   return (
     <div className="space-y-4">
-      {/* Tips */}
       {showTips && (
         <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 flex items-start gap-3 animate-fade-in">
           <HelpCircle className="w-5 h-5 text-accent shrink-0 mt-0.5" />
@@ -747,38 +785,26 @@ const DesignStudio = () => {
             <HelpCircle className="w-3.5 h-3.5" /> Tips
           </button>
           <div className="h-4 w-px bg-border" />
-          <button onClick={undo} disabled={undoStack.length === 0} className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30 transition-colors" title="Undo (Ctrl+Z)">
-            <Undo2 className="w-4 h-4" />
-          </button>
-          <button onClick={redo} disabled={redoStack.length === 0} className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30 transition-colors" title="Redo (Ctrl+Y)">
-            <Redo2 className="w-4 h-4" />
-          </button>
+          <button onClick={undo} disabled={undoStack.length === 0} className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30 transition-colors" title="Undo"><Undo2 className="w-4 h-4" /></button>
+          <button onClick={redo} disabled={redoStack.length === 0} className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30 transition-colors" title="Redo"><Redo2 className="w-4 h-4" /></button>
           <div className="h-4 w-px bg-border" />
-          <button onClick={() => setZoom(z => Math.min(z + 0.1, 2))} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Zoom In">
-            <ZoomIn className="w-4 h-4" />
-          </button>
+          <button onClick={() => setZoom(z => Math.min(z + 0.1, 2))} className="p-1.5 rounded-md hover:bg-muted transition-colors"><ZoomIn className="w-4 h-4" /></button>
           <span className="text-xs text-muted-foreground min-w-[40px] text-center">{Math.round(zoom * 100)}%</span>
-          <button onClick={() => setZoom(z => Math.max(z - 0.1, 0.5))} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Zoom Out">
-            <ZoomOut className="w-4 h-4" />
-          </button>
+          <button onClick={() => setZoom(z => Math.max(z - 0.1, 0.5))} className="p-1.5 rounded-md hover:bg-muted transition-colors"><ZoomOut className="w-4 h-4" /></button>
           <button onClick={() => setZoom(1)} className="text-xs text-muted-foreground hover:text-foreground">Reset</button>
           <div className="h-4 w-px bg-border" />
-          <button onClick={() => setShowGrid(!showGrid)} className={`p-1.5 rounded-md transition-colors ${showGrid ? "bg-accent/20 text-accent" : "hover:bg-muted"}`} title="Toggle Grid">
-            <Grid3X3 className="w-4 h-4" />
-          </button>
-          <button onClick={() => setView3D(!view3D)} className={`p-1.5 rounded-md transition-colors ${view3D ? "bg-accent/20 text-accent" : "hover:bg-muted"}`} title="3D View">
-            <Sparkles className="w-4 h-4" />
-          </button>
+          <button onClick={() => setShowGrid(!showGrid)} className={`p-1.5 rounded-md transition-colors ${showGrid ? "bg-accent/20 text-accent" : "hover:bg-muted"}`}><Grid3X3 className="w-4 h-4" /></button>
+          <button onClick={() => setView3D(!view3D)} className={`p-1.5 rounded-md transition-colors ${view3D ? "bg-accent/20 text-accent" : "hover:bg-muted"}`} title="3D View"><Sparkles className="w-4 h-4" /></button>
         </div>
         <div className="flex items-center gap-2">
           {selectedElement && (
             <>
-              <button onClick={() => rotateSelected(45)} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Rotate 45°"><RotateCw className="w-4 h-4" /></button>
-              <button onClick={() => rotateSelected(-45)} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Rotate -45°"><RotateCcw className="w-4 h-4" /></button>
-              <button onClick={flipHorizontal} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Flip H"><FlipHorizontal className="w-4 h-4" /></button>
-              <button onClick={flipVertical} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Flip V"><FlipVertical className="w-4 h-4" /></button>
-              <button onClick={duplicateSelected} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Duplicate"><Copy className="w-4 h-4" /></button>
-              <button onClick={deleteSelected} className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
+              <button onClick={() => rotateSelected(45)} className="p-1.5 rounded-md hover:bg-muted transition-colors"><RotateCw className="w-4 h-4" /></button>
+              <button onClick={() => rotateSelected(-45)} className="p-1.5 rounded-md hover:bg-muted transition-colors"><RotateCcw className="w-4 h-4" /></button>
+              <button onClick={flipHorizontal} className="p-1.5 rounded-md hover:bg-muted transition-colors"><FlipHorizontal className="w-4 h-4" /></button>
+              <button onClick={flipVertical} className="p-1.5 rounded-md hover:bg-muted transition-colors"><FlipVertical className="w-4 h-4" /></button>
+              <button onClick={duplicateSelected} className="p-1.5 rounded-md hover:bg-muted transition-colors"><Copy className="w-4 h-4" /></button>
+              <button onClick={deleteSelected} className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors"><Trash2 className="w-4 h-4" /></button>
               <div className="h-4 w-px bg-border" />
               <div className="flex items-center gap-1">
                 <span className="text-[10px] text-muted-foreground">Opacity</span>
@@ -786,11 +812,11 @@ const DesignStudio = () => {
                 <span className="text-[10px] text-muted-foreground w-7">{elementOpacity}%</span>
               </div>
               <div className="h-4 w-px bg-border" />
-              <button onClick={() => alignElement("left")} className="p-1 rounded hover:bg-muted" title="Align Left"><AlignLeft className="w-3.5 h-3.5" /></button>
-              <button onClick={() => alignElement("center")} className="p-1 rounded hover:bg-muted" title="Align Center"><AlignCenter className="w-3.5 h-3.5" /></button>
-              <button onClick={() => alignElement("right")} className="p-1 rounded hover:bg-muted" title="Align Right"><AlignRight className="w-3.5 h-3.5" /></button>
-              <button onClick={() => moveLayer(selectedId!, "up")} className="p-1 rounded hover:bg-muted" title="Bring Forward"><ArrowUp className="w-3.5 h-3.5" /></button>
-              <button onClick={() => moveLayer(selectedId!, "down")} className="p-1 rounded hover:bg-muted" title="Send Back"><ArrowDown className="w-3.5 h-3.5" /></button>
+              <button onClick={() => alignElement("left")} className="p-1 rounded hover:bg-muted"><AlignLeft className="w-3.5 h-3.5" /></button>
+              <button onClick={() => alignElement("center")} className="p-1 rounded hover:bg-muted"><AlignCenter className="w-3.5 h-3.5" /></button>
+              <button onClick={() => alignElement("right")} className="p-1 rounded hover:bg-muted"><AlignRight className="w-3.5 h-3.5" /></button>
+              <button onClick={() => moveLayer(selectedId!, "up")} className="p-1 rounded hover:bg-muted"><ArrowUp className="w-3.5 h-3.5" /></button>
+              <button onClick={() => moveLayer(selectedId!, "down")} className="p-1 rounded hover:bg-muted"><ArrowDown className="w-3.5 h-3.5" /></button>
             </>
           )}
         </div>
@@ -809,23 +835,29 @@ const DesignStudio = () => {
             ))}
           </div>
 
-          {/* Garment Tab */}
+          {/* Garment Tab - with drag & drop */}
           {activeTab === "garment" && (
             <div className="space-y-2">
               <div className="bg-card border border-border rounded-lg p-3">
                 <h3 className="text-xs font-semibold text-foreground mb-2">Category</h3>
                 <div className="flex flex-wrap gap-1 mb-3">
-                  {["all", "tops", "bottoms", "outerwear", "sets"].map(c => (
+                  {["all", "tops", "bottoms", "outerwear", "sets", "accessories"].map(c => (
                     <button key={c} onClick={() => setGarmentCategory(c)}
                       className={`px-2 py-1 rounded text-[10px] font-medium capitalize transition-colors ${garmentCategory === c ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
                       {c}
                     </button>
                   ))}
                 </div>
+                <p className="text-[9px] text-muted-foreground mb-2 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" /> Drag garments onto canvas to fit
+                </p>
                 <div className="grid grid-cols-3 gap-1.5">
                   {filteredGarments.map(g => (
-                    <button key={g.id} onClick={() => setGarment(g)}
-                      className={`p-1.5 rounded-md border text-[10px] font-medium transition-all ${garment.id === g.id ? "border-accent bg-accent/10 text-accent" : "border-border text-muted-foreground hover:border-accent/50"}`}>
+                    <button key={g.id}
+                      draggable={g.src !== null}
+                      onDragStart={() => handleGarmentDragStart(g.id)}
+                      onClick={() => setGarment(g)}
+                      className={`p-1.5 rounded-md border text-[10px] font-medium transition-all cursor-grab active:cursor-grabbing ${garment.id === g.id ? "border-accent bg-accent/10 text-accent" : "border-border text-muted-foreground hover:border-accent/50"}`}>
                       {g.label}
                     </button>
                   ))}
@@ -853,7 +885,7 @@ const DesignStudio = () => {
           {activeTab === "avatar" && (
             <div className="bg-card border border-border rounded-lg p-3 space-y-3">
               <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Model Avatars</h3>
-              <p className="text-[10px] text-muted-foreground">Preview designs on diverse body types.</p>
+              <p className="text-[10px] text-muted-foreground">Preview designs on diverse body types. Drag garments to fit on avatar.</p>
               <button onClick={() => setSelectedAvatar(null)}
                 className={`w-full px-2 py-1.5 rounded-md text-[10px] font-medium transition-colors ${!selectedAvatar ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
                 No Avatar (Garment Only)
@@ -909,9 +941,7 @@ const DesignStudio = () => {
                   <input type="color" value={textStrokeColor} onChange={e => setTextStrokeColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border-0" />
                 </div>
               )}
-              <button onClick={addText} disabled={!textInput.trim()} className="w-full py-1.5 bg-accent text-accent-foreground rounded-md text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
-                Add Text
-              </button>
+              <button onClick={addText} disabled={!textInput.trim()} className="w-full py-1.5 bg-accent text-accent-foreground rounded-md text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">Add Text</button>
             </div>
           )}
 
@@ -946,18 +976,10 @@ const DesignStudio = () => {
                 <input type="color" value={shapeStrokeColor} onChange={e => setShapeStrokeColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border-0" />
               </div>
               <div className="grid grid-cols-2 gap-1.5">
-                <button onClick={() => addShape("rect")} className="flex items-center justify-center gap-1.5 p-2 rounded-md border border-border hover:border-accent/50 hover:bg-accent/5 text-[10px] font-medium transition-all">
-                  <Square className="w-4 h-4" /> Rectangle
-                </button>
-                <button onClick={() => addShape("circle")} className="flex items-center justify-center gap-1.5 p-2 rounded-md border border-border hover:border-accent/50 hover:bg-accent/5 text-[10px] font-medium transition-all">
-                  <CircleIcon className="w-4 h-4" /> Circle
-                </button>
-                <button onClick={() => addShape("triangle")} className="flex items-center justify-center gap-1.5 p-2 rounded-md border border-border hover:border-accent/50 hover:bg-accent/5 text-[10px] font-medium transition-all">
-                  <Triangle className="w-4 h-4" /> Triangle
-                </button>
-                <button onClick={() => addShape("line")} className="flex items-center justify-center gap-1.5 p-2 rounded-md border border-border hover:border-accent/50 hover:bg-accent/5 text-[10px] font-medium transition-all">
-                  <PenTool className="w-4 h-4" /> Line
-                </button>
+                <button onClick={() => addShape("rect")} className="flex items-center justify-center gap-1.5 p-2 rounded-md border border-border hover:border-accent/50 hover:bg-accent/5 text-[10px] font-medium transition-all"><Square className="w-4 h-4" /> Rectangle</button>
+                <button onClick={() => addShape("circle")} className="flex items-center justify-center gap-1.5 p-2 rounded-md border border-border hover:border-accent/50 hover:bg-accent/5 text-[10px] font-medium transition-all"><CircleIcon className="w-4 h-4" /> Circle</button>
+                <button onClick={() => addShape("triangle")} className="flex items-center justify-center gap-1.5 p-2 rounded-md border border-border hover:border-accent/50 hover:bg-accent/5 text-[10px] font-medium transition-all"><Triangle className="w-4 h-4" /> Triangle</button>
+                <button onClick={() => addShape("line")} className="flex items-center justify-center gap-1.5 p-2 rounded-md border border-border hover:border-accent/50 hover:bg-accent/5 text-[10px] font-medium transition-all"><PenTool className="w-4 h-4" /> Line</button>
               </div>
             </div>
           )}
@@ -989,13 +1011,13 @@ const DesignStudio = () => {
               <div className="grid grid-cols-2 gap-1.5">
                 {PATTERNS.map(p => (
                   <button key={p.id} onClick={() => setSelectedPattern(p.id)}
-                    className={`p-1.5 rounded-md border text-[10px] font-medium transition-all ${selectedPattern === p.id ? "border-accent bg-accent/10 text-accent" : "border-border text-muted-foreground hover:border-accent/50"}`}>
+                    className={`px-2 py-1.5 rounded-md text-[10px] font-medium transition-colors ${selectedPattern === p.id ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
                     {p.label}
                   </button>
                 ))}
               </div>
               {selectedPattern && (
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 pt-1">
                   <div className="flex items-center gap-1.5">
                     <span className="text-[10px] text-muted-foreground">Color:</span>
                     <input type="color" value={patternColor} onChange={e => setPatternColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border-0" />
@@ -1007,6 +1029,101 @@ const DesignStudio = () => {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Watermark Tab */}
+          {activeTab === "watermark" && (
+            <div className="bg-card border border-border rounded-lg p-3 space-y-2">
+              <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Watermark</h3>
+              <p className="text-[9px] text-muted-foreground">Add brand protection to your designs</p>
+              <label className="flex items-center gap-2 text-[10px]">
+                <input type="checkbox" checked={watermarkEnabled} onChange={e => setWatermarkEnabled(e.target.checked)} className="rounded" />
+                <span className="font-medium text-foreground">Enable Watermark</span>
+              </label>
+              {watermarkEnabled && (
+                <div className="space-y-2">
+                  <input value={watermarkText} onChange={e => setWatermarkText(e.target.value)} placeholder="Watermark text..." className="w-full h-8 rounded-md border border-input bg-background px-2 text-xs" />
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-muted-foreground">Color:</span>
+                    <input type="color" value={watermarkColor} onChange={e => setWatermarkColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border-0" />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-muted-foreground">Opacity:</span>
+                    <input type="range" min={5} max={50} value={watermarkOpacity} onChange={e => setWatermarkOpacity(Number(e.target.value))} className="flex-1 h-1 accent-accent" />
+                    <span className="text-[10px] text-muted-foreground w-7">{watermarkOpacity}%</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-muted-foreground">Size:</span>
+                    <input type="range" min={12} max={60} value={watermarkSize} onChange={e => setWatermarkSize(Number(e.target.value))} className="flex-1 h-1 accent-accent" />
+                    <span className="text-[10px] text-muted-foreground w-7">{watermarkSize}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-muted-foreground">Angle:</span>
+                    <input type="range" min={-90} max={90} value={watermarkAngle} onChange={e => setWatermarkAngle(Number(e.target.value))} className="flex-1 h-1 accent-accent" />
+                    <span className="text-[10px] text-muted-foreground w-7">{watermarkAngle}°</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Gradient Tab */}
+          {activeTab === "gradient" && (
+            <div className="bg-card border border-border rounded-lg p-3 space-y-2">
+              <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5"><Gradient className="w-3.5 h-3.5" /> Gradient Background</h3>
+              <label className="flex items-center gap-2 text-[10px]">
+                <input type="checkbox" checked={useGradient} onChange={e => setUseGradient(e.target.checked)} className="rounded" />
+                <span className="font-medium text-foreground">Use Gradient</span>
+              </label>
+              {useGradient && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <span className="text-[9px] text-muted-foreground block mb-0.5">Start</span>
+                      <input type="color" value={gradientColor1} onChange={e => setGradientColor1(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-muted-foreground block mb-0.5">End</span>
+                      <input type="color" value={gradientColor2} onChange={e => setGradientColor2(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
+                    </div>
+                    <div className="flex-1 h-8 rounded-md" style={{ background: `linear-gradient(135deg, ${gradientColor1}, ${gradientColor2})` }} />
+                  </div>
+                  <p className="text-[9px] text-muted-foreground">Presets:</p>
+                  <div className="grid grid-cols-3 gap-1">
+                    {GRADIENT_PRESETS.map(g => (
+                      <button key={g.id} onClick={() => { setGradientColor1(g.colors[0]); setGradientColor2(g.colors[1]); }}
+                        className="h-8 rounded-md border border-border hover:border-accent/50 transition-colors"
+                        style={{ background: `linear-gradient(135deg, ${g.colors[0]}, ${g.colors[1]})` }}
+                        title={g.label} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Filters Tab */}
+          {activeTab === "filters" && (
+            <div className="bg-card border border-border rounded-lg p-3 space-y-2">
+              <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5"><Wand2 className="w-3.5 h-3.5" /> Color Filters</h3>
+              <p className="text-[9px] text-muted-foreground">Apply mood filters to your entire design</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { id: null, label: "None" },
+                  { id: "grayscale", label: "Grayscale" },
+                  { id: "sepia", label: "Sepia" },
+                  { id: "warm", label: "Warm" },
+                  { id: "cool", label: "Cool" },
+                  { id: "vintage", label: "Vintage" },
+                  { id: "vivid", label: "Vivid" },
+                ].map(f => (
+                  <button key={f.id || "none"} onClick={() => setColorFilter(f.id)}
+                    className={`px-2 py-1.5 rounded-md text-[10px] font-medium transition-colors ${colorFilter === f.id ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -1027,7 +1144,7 @@ const DesignStudio = () => {
               </div>
               <div>
                 <p className="text-[10px] font-medium text-muted-foreground mb-1.5">Fabric</p>
-                <div className="space-y-1">
+                <div className="space-y-1 max-h-[250px] overflow-y-auto">
                   {FABRICS.map(f => (
                     <button key={f.id} onClick={() => setSelectedFabric(f.id)}
                       className={`w-full flex items-center justify-between px-2 py-1.5 rounded-md text-[10px] transition-colors ${selectedFabric === f.id ? "bg-accent/10 border border-accent text-accent" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
@@ -1046,14 +1163,14 @@ const DesignStudio = () => {
               <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5"><Layers className="w-3.5 h-3.5" /> Layers</h3>
               {elements.length === 0 && <p className="text-[10px] text-muted-foreground">No elements yet.</p>}
               <div className="space-y-1 max-h-[300px] overflow-y-auto">
-                {[...elements].reverse().map((el, i) => (
+                {[...elements].reverse().map((el) => (
                   <div key={el.id} onClick={() => !el.locked && setSelectedId(el.id)}
                     className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] cursor-pointer transition-colors ${selectedId === el.id ? "bg-accent/10 border border-accent" : "bg-muted hover:bg-muted/80"}`}>
                     <span className="truncate flex-1 font-medium">{el.name || el.type}</span>
-                    <button onClick={e => { e.stopPropagation(); toggleVisibility(el.id); }} className="p-0.5 hover:bg-background rounded" title="Toggle visibility">
+                    <button onClick={e => { e.stopPropagation(); toggleVisibility(el.id); }} className="p-0.5 hover:bg-background rounded">
                       {(el.visible ?? true) ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3 text-muted-foreground" />}
                     </button>
-                    <button onClick={e => { e.stopPropagation(); toggleLock(el.id); }} className="p-0.5 hover:bg-background rounded" title="Toggle lock">
+                    <button onClick={e => { e.stopPropagation(); toggleLock(el.id); }} className="p-0.5 hover:bg-background rounded">
                       {el.locked ? <Lock className="w-3 h-3 text-destructive" /> : <Unlock className="w-3 h-3" />}
                     </button>
                     <button onClick={e => { e.stopPropagation(); moveLayer(el.id, "up"); }} className="p-0.5 hover:bg-background rounded"><ArrowUp className="w-3 h-3" /></button>
@@ -1093,6 +1210,8 @@ const DesignStudio = () => {
                   <p><span className="font-medium">Fabric:</span> {FABRICS.find(f => f.id === selectedFabric)?.label}</p>
                   <p><span className="font-medium">Elements:</span> {elements.length}</p>
                   {selectedAvatar && <p><span className="font-medium">Avatar:</span> {AVATARS.find(a => a.id === selectedAvatar)?.label}</p>}
+                  {watermarkEnabled && <p><span className="font-medium">Watermark:</span> {watermarkText || "—"}</p>}
+                  {colorFilter && <p><span className="font-medium">Filter:</span> {colorFilter}</p>}
                 </div>
               </div>
             </div>
@@ -1100,21 +1219,26 @@ const DesignStudio = () => {
         </div>
 
         {/* Canvas */}
-        <div className="flex-1 flex flex-col items-center">
-          <div className={`bg-card border border-border rounded-lg p-3 inline-block transition-transform duration-500 ${view3D ? "perspective-distant" : ""}`}
+        <div className="flex-1 flex flex-col items-center"
+          onDragOver={e => e.preventDefault()}
+          onDrop={handleCanvasDrop}
+        >
+          <div className={`bg-card border border-border rounded-lg p-3 inline-block transition-transform duration-500`}
             style={view3D ? { perspective: "1200px" } : {}}>
             <p className="text-[10px] text-muted-foreground mb-1.5 text-center">
-              Click to select • Drag to move • Handles to resize • Ctrl+Z undo
+              Click to select • Drag to move • Handles to resize • Drop garments here
             </p>
             <div
               style={{
-                backgroundColor: "#f0f0f0",
+                backgroundColor: useGradient ? undefined : "#f0f0f0",
+                background: useGradient ? `linear-gradient(135deg, ${gradientColor1}, ${gradientColor2})` : undefined,
                 borderRadius: 8,
                 overflow: "hidden",
                 transform: view3D ? `rotateY(15deg) rotateX(5deg)` : `scale(${zoom})`,
                 transformOrigin: "center center",
                 transition: "transform 0.5s cubic-bezier(0.4,0,0.2,1)",
                 boxShadow: view3D ? "20px 20px 60px rgba(0,0,0,0.3)" : "none",
+                ...canvasFilterStyle,
               }}
             >
               <Stage
@@ -1128,7 +1252,7 @@ const DesignStudio = () => {
                 }}
               >
                 <Layer>
-                  <Rect x={0} y={0} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill={garmentColor} name="garment-bg" />
+                  <Rect x={0} y={0} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill={useGradient ? "transparent" : garmentColor} name="garment-bg" />
                   {renderPattern()}
                   {avatarImage && (
                     <KonvaImage
@@ -1198,14 +1322,17 @@ const DesignStudio = () => {
                     }
                     return null;
                   })}
+                  {renderWatermark()}
                   <Transformer ref={transformerRef} boundBoxFunc={(oldBox, newBox) => (newBox.width < 10 || newBox.height < 10 ? oldBox : newBox)} />
                 </Layer>
               </Stage>
             </div>
           </div>
-          {/* 3D indicator */}
           {view3D && (
             <p className="text-[10px] text-accent mt-2 animate-pulse flex items-center gap-1"><Sparkles className="w-3 h-3" /> 3D Preview Mode Active</p>
+          )}
+          {dragGarment && (
+            <p className="text-[10px] text-accent mt-2 animate-pulse flex items-center gap-1"><Shirt className="w-3 h-3" /> Drop garment on canvas to apply</p>
           )}
         </div>
       </div>
