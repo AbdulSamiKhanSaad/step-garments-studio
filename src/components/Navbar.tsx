@@ -16,6 +16,7 @@ const Navbar = () => {
     { label: t("home"), path: "/" },
     { label: t("products"), path: "/products" },
     { label: t("services"), path: "/services" },
+    { label: "Lookbook", path: "/lookbook" },
     { label: t("process"), path: "/process" },
     { label: t("faq"), path: "/faq" },
     { label: t("contact"), path: "/contact" },
