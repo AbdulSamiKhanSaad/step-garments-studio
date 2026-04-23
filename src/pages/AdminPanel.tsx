@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone, FlaskConical, FolderUp } from "lucide-react";
+import MaintenanceManager from "@/components/admin/MaintenanceManager";
 
 const adminNav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
@@ -633,15 +634,19 @@ const AdminSettings = ({ userId }: { userId: string }) => {
   };
 
   return (
-    <div>
-      <h2 className="font-heading text-xl font-bold text-foreground mb-6">Admin Settings</h2>
-      <div className="bg-card border border-border rounded-lg p-6 max-w-lg">
-        <h3 className="font-heading font-bold text-foreground mb-4">Invite Admin</h3>
-        <p className="text-sm text-muted-foreground mb-4">Grant admin access to an existing user by their email address.</p>
-        <form onSubmit={inviteAdmin} className="flex gap-3">
-          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="user@email.com" className="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
-          <button type="submit" className="btn-primary text-sm py-2">Grant Admin</button>
-        </form>
+    <div className="space-y-8">
+      <MaintenanceManager />
+
+      <div>
+        <h2 className="font-heading text-xl font-bold text-foreground mb-6">Admin Settings</h2>
+        <div className="bg-card border border-border rounded-lg p-6 max-w-lg">
+          <h3 className="font-heading font-bold text-foreground mb-4">Invite Admin</h3>
+          <p className="text-sm text-muted-foreground mb-4">Grant admin access to an existing user by their email address.</p>
+          <form onSubmit={inviteAdmin} className="flex gap-3">
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="user@email.com" className="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
+            <button type="submit" className="btn-primary text-sm py-2">Grant Admin</button>
+          </form>
+        </div>
       </div>
     </div>
   );
