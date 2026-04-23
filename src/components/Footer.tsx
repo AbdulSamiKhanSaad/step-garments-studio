@@ -1,5 +1,28 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Instagram, Facebook, AtSign, Music2 } from "lucide-react";
+
+const SOCIALS = [
+  {
+    name: "Instagram",
+    icon: Instagram,
+    href: "https://www.instagram.com/stepgarments",
+  },
+  {
+    name: "Facebook",
+    icon: Facebook,
+    href: "https://www.facebook.com/stepgarments",
+  },
+  {
+    name: "Threads",
+    icon: AtSign,
+    href: "https://www.threads.net/@stepgarments",
+  },
+  {
+    name: "TikTok",
+    icon: Music2,
+    href: "https://www.tiktok.com/@stepgarments",
+  },
+];
 
 const Footer = () => (
   <footer className="bg-navy text-primary-foreground">
@@ -9,9 +32,23 @@ const Footer = () => (
           <h3 className="font-heading text-2xl font-bold mb-4">
             STEP <span className="text-accent">GARMENTS</span>
           </h3>
-          <p className="text-primary-foreground/70 text-sm leading-relaxed">
+          <p className="text-primary-foreground/70 text-sm leading-relaxed mb-6">
             Full-scale apparel manufacturing company providing end-to-end garment production services worldwide.
           </p>
+          <div className="flex items-center gap-3">
+            {SOCIALS.map(({ name, icon: Icon, href }) => (
+              <a
+                key={name}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Follow Step Garments on ${name}`}
+                className="w-10 h-10 rounded-full bg-primary-foreground/10 hover:bg-accent hover:scale-110 active:scale-95 flex items-center justify-center transition-all duration-300"
+              >
+                <Icon size={18} />
+              </a>
+            ))}
+          </div>
         </div>
         <div>
           <h4 className="font-heading font-semibold text-lg mb-4">Quick Links</h4>

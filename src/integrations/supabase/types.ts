@@ -94,6 +94,33 @@ export type Database = {
           },
         ]
       }
+      maintenance_settings: {
+        Row: {
+          id: string
+          is_enabled: boolean
+          message: string | null
+          scope: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          is_enabled?: boolean
+          message?: string | null
+          scope: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          is_enabled?: boolean
+          message?: string | null
+          scope?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
