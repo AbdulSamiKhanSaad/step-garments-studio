@@ -87,8 +87,8 @@ const MaintenanceManager = () => {
       </div>
 
       {site?.is_enabled && (
-        <div className="flex items-start gap-3 p-4 rounded-lg border border-orange-300 bg-orange-50 text-orange-900">
-          <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+        <div className="flex items-start gap-3 p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-foreground">
+          <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0 text-destructive" />
           <p className="text-sm">
             <strong>Whole-site maintenance is ON.</strong> Visitors see the maintenance screen on
             every public page. Per-page toggles are ignored while this is active.
