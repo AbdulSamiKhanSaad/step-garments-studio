@@ -5,9 +5,9 @@ import { Clock, Layers, Ruler, Package } from "lucide-react";
 
 import productTshirts from "@/assets/product-tshirts.jpg";
 import productHoodies from "@/assets/product-hoodies.jpg";
-import productPolos from "@/assets/product-polos.jpg";
+import productPolos from "@/assets/product-polo.jpg";
 import productJackets from "@/assets/product-jackets.jpg";
-import productActivewear from "@/assets/product-activewear.jpg";
+import productActivewear from "@/assets/product-sportswear.jpg";
 import productDenim from "@/assets/product-denim.jpg";
 import productDressshirts from "@/assets/product-dressshirts.jpg";
 import productPuffer from "@/assets/product-puffer.jpg";
