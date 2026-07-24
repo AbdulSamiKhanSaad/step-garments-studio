@@ -84,7 +84,7 @@ const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
     case "/admin/clients": return <AdminClients />;
     case "/admin/quotes": return <AdminQuotes />;
     case "/admin/orders": return <AdminOrders userId={userId} />;
-    case "/admin/products": return <AdminProducts />
+    case "/admin/products": return <AdminProducts />;
     case "/admin/samples": return <AdminSamples />;
     case "/admin/techpacks": return <AdminTechPacks />;
     case "/admin/messages": return <AdminMessages userId={userId} />;
