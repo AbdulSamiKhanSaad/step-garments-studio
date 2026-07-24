@@ -53,7 +53,7 @@ const Footer = () => (
         <div>
           <h4 className="font-heading font-semibold text-lg mb-4">Quick Links</h4>
           <div className="flex flex-col gap-2">
-            {[{ l: "Home", p: "/" }, { l: "Products", p: "/products" }, { l: "Services", p: "/services" }, { l: "Process", p: "/process" }, { l: "Contact", p: "/contact" }].map((item) => (
+            {[{ l: "Home", p: "/" }, { l: "About Us", p: "/about" }, { l: "Products", p: "/products" }, { l: "Services", p: "/services" }, { l: "Process", p: "/process" }, { l: "Contact", p: "/contact" }].map((item) => (
               <Link key={item.p} to={item.p} className="text-sm text-primary-foreground/70 hover:text-accent transition-colors">{item.l}</Link>
             ))}
           </div>

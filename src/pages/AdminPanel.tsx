@@ -3,14 +3,16 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone, FlaskConical, FolderUp } from "lucide-react";
+import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone, FlaskConical, FolderUp, ShoppingBag } from "lucide-react";
 import MaintenanceManager from "@/components/admin/MaintenanceManager";
+import AdminProducts from "@/components/admin/AdminProducts";
 
 const adminNav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
   { label: "Clients", path: "/admin/clients", icon: Users },
   { label: "Quotes", path: "/admin/quotes", icon: FileText },
   { label: "Orders", path: "/admin/orders", icon: Package },
+  { label: "Products", path: "/admin/products", icon: ShoppingBag },
   { label: "Samples", path: "/admin/samples", icon: FlaskConical },
   { label: "Tech Packs", path: "/admin/techpacks", icon: FolderUp },
   { label: "Messages", path: "/admin/messages", icon: MessageSquare },
@@ -82,6 +84,7 @@ const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
     case "/admin/clients": return <AdminClients />;
     case "/admin/quotes": return <AdminQuotes />;
     case "/admin/orders": return <AdminOrders userId={userId} />;
+    case "/admin/products": return <AdminProducts />;
     case "/admin/samples": return <AdminSamples />;
     case "/admin/techpacks": return <AdminTechPacks />;
     case "/admin/messages": return <AdminMessages userId={userId} />;

@@ -15,6 +15,7 @@ import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
 import Auth from "./pages/Auth";
 import Lookbook from "./pages/Lookbook";
+import About from "./pages/About";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
@@ -39,6 +40,7 @@ const App = () => (
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/lookbook" element={<Lookbook />} />
+                <Route path="/about" element={<About />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/dashboard" element={<CustomerDashboard />} />
                 <Route path="/dashboard/quotes" element={<CustomerDashboard />} />
@@ -54,6 +56,7 @@ const App = () => (
                 <Route path="/admin/clients" element={<AdminPanel />} />
                 <Route path="/admin/quotes" element={<AdminPanel />} />
                 <Route path="/admin/orders" element={<AdminPanel />} />
+                <Route path="/admin/products" element={<AdminPanel />} />
                 <Route path="/admin/messages" element={<AdminPanel />} />
                 <Route path="/admin/invoices" element={<AdminPanel />} />
                 <Route path="/admin/contacts" element={<AdminPanel />} />

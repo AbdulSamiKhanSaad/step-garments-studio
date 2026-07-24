@@ -1,0 +1,224 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Trash2, Plus, Star } from "lucide-react";
+
+const CATEGORIES = [
+  { slug: "tshirts", name: "T-Shirts" },
+  { slug: "hoodies", name: "Hoodies" },
+  { slug: "tracksuits", name: "Tracksuits" },
+  { slug: "jackets", name: "Jackets" },
+  { slug: "sportswear", name: "Sportswear" },
+  { slug: "streetwear", name: "Streetwear" },
+  { slug: "denim", name: "Denim" },
+  { slug: "polo", name: "Polo Shirts" },
+  { slug: "uniforms", name: "Corporate Uniforms" },
+  { slug: "kidswear", name: "Kids Wear" },
+  { slug: "trousers", name: "Trousers" },
+  { slug: "shorts", name: "Shorts" },
+  { slug: "tanktops", name: "Tank Tops" },
+  { slug: "joggers", name: "Joggers" },
+  { slug: "dressshirts", name: "Dress Shirts" },
+  { slug: "puffer", name: "Puffer Jackets" },
+  { slug: "cargopants", name: "Cargo Pants" },
+  { slug: "swimwear", name: "Swimwear" },
+  { slug: "leggings", name: "Leggings" },
+  { slug: "caps", name: "Caps & Hats" },
+];
+
+interface Product {
+  id: string;
+  category_slug: string;
+  name: string;
+  description: string;
+  image_url: string | null;
+  moq: string | null;
+  fabrics: string[];
+  featured: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+const AdminProducts = () => {
+  const [items, setItems] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [form, setForm] = useState({
+    category_slug: "tshirts",
+    name: "",
+    description: "",
+    image_url: "",
+    moq: "",
+    fabrics: "",
+    featured: false,
+  });
+
+  const fetchProducts = async () => {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      toast({ title: "Failed to load products", description: error.message, variant: "destructive" });
+      return;
+    }
+    setItems((data as Product[]) || []);
+  };
+
+  useEffect(() => { fetchProducts(); }, []);
+
+  const uploadImage = async (file: File) => {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("production-images").upload(path, file, { upsert: false });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("production-images").getPublicUrl(path);
+      setForm((f) => ({ ...f, image_url: data.publicUrl }));
+      toast({ title: "Image uploaded" });
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const addProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim()) {
+      toast({ title: "Name required", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    const fabrics = form.fabrics.split(",").map((s) => s.trim()).filter(Boolean);
+    const { error } = await supabase.from("products").insert({
+      category_slug: form.category_slug,
+      name: form.name.trim(),
+      description: form.description.trim(),
+      image_url: form.image_url.trim() || null,
+      moq: form.moq.trim() || null,
+      fabrics,
+      featured: form.featured,
+    });
+    setLoading(false);
+    if (error) {
+      toast({ title: "Failed to add product", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Product added" });
+    setForm({ category_slug: form.category_slug, name: "", description: "", image_url: "", moq: "", fabrics: "", featured: false });
+    fetchProducts();
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm("Delete this product?")) return;
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Product deleted" });
+    fetchProducts();
+  };
+
+  const toggleFeatured = async (p: Product) => {
+    await supabase.from("products").update({ featured: !p.featured }).eq("id", p.id);
+    fetchProducts();
+  };
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="font-heading text-xl font-bold text-foreground mb-2">Products</h2>
+        <p className="text-sm text-muted-foreground">Add products to categories — they appear instantly on the public Products page.</p>
+      </div>
+
+      <form onSubmit={addProduct} className="bg-card border border-border rounded-lg p-6 space-y-4">
+        <h3 className="font-semibold text-foreground flex items-center gap-2"><Plus className="w-4 h-4" /> Add New Product</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label>Category *</Label>
+            <select value={form.category_slug} onChange={(e) => setForm({ ...form, category_slug: e.target.value })} className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm">
+              {CATEGORIES.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Product Name *</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Oversized Boxy Tee" required />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Description</Label>
+          <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Heavy-weight 240gsm cotton with dropped shoulders..." />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label>MOQ</Label>
+            <Input value={form.moq} onChange={(e) => setForm({ ...form, moq: e.target.value })} placeholder="200 pcs" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Fabrics (comma-separated)</Label>
+            <Input value={form.fabrics} onChange={(e) => setForm({ ...form, fabrics: e.target.value })} placeholder="100% Cotton, Cotton/Poly Blend" />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Product Image</Label>
+          <div className="flex flex-col sm:flex-row gap-3 items-start">
+            <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0])} className="text-sm" />
+            <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="or paste image URL" className="flex-1" />
+          </div>
+          {uploading && <p className="text-xs text-muted-foreground">Uploading...</p>}
+          {form.image_url && <img src={form.image_url} alt="preview" className="mt-2 h-24 w-24 object-cover rounded-md border border-border" />}
+        </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} />
+          Mark as featured
+        </label>
+        <button type="submit" disabled={loading || uploading} className="btn-primary text-sm disabled:opacity-50">
+          {loading ? "Adding..." : "Add Product"}
+        </button>
+      </form>
+
+      <div>
+        <h3 className="font-semibold text-foreground mb-3">All Products ({items.length})</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {items.length === 0 && <p className="text-sm text-muted-foreground">No products yet.</p>}
+          {items.map((p) => {
+            const catName = CATEGORIES.find((c) => c.slug === p.category_slug)?.name || p.category_slug;
+            return (
+              <div key={p.id} className="bg-card border border-border rounded-lg overflow-hidden">
+                {p.image_url ? (
+                  <img src={p.image_url} alt={p.name} className="w-full aspect-square object-cover" />
+                ) : (
+                  <div className="w-full aspect-square bg-muted flex items-center justify-center text-muted-foreground text-sm">No image</div>
+                )}
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-xs text-accent font-semibold uppercase tracking-wide">{catName}</p>
+                      <h4 className="font-semibold text-foreground">{p.name}</h4>
+                    </div>
+                    <button onClick={() => toggleFeatured(p)} title="Toggle featured">
+                      <Star className={`w-4 h-4 ${p.featured ? "fill-accent text-accent" : "text-muted-foreground"}`} />
+                    </button>
+                  </div>
+                  {p.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
+                  {p.moq && <p className="text-xs text-muted-foreground mt-1">MOQ: {p.moq}</p>}
+                  <button onClick={() => remove(p.id)} className="mt-3 flex items-center gap-1 text-xs text-red-600 hover:underline">
+                    <Trash2 className="w-3 h-3" /> Delete
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminProducts;
