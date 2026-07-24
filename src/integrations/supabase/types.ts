@@ -250,6 +250,48 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          category_slug: string
+          created_at: string
+          description: string
+          fabrics: string[]
+          featured: boolean
+          id: string
+          image_url: string | null
+          moq: string | null
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          category_slug: string
+          created_at?: string
+          description?: string
+          fabrics?: string[]
+          featured?: boolean
+          id?: string
+          image_url?: string | null
+          moq?: string | null
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          category_slug?: string
+          created_at?: string
+          description?: string
+          fabrics?: string[]
+          featured?: boolean
+          id?: string
+          image_url?: string | null
+          moq?: string | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
