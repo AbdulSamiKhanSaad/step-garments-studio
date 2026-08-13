@@ -38,6 +38,7 @@ interface Product {
   moq: string | null;
   fabrics: string[];
   featured: boolean;
+  is_published: boolean;
   sort_order: number;
   created_at: string;
 }
@@ -184,13 +185,27 @@ const AdminProducts = () => {
       </form>
 
       <div>
-        <h3 className="font-semibold text-foreground mb-3">All Products ({items.length})</h3>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <h3 className="font-semibold text-foreground">All Products ({visible.length})</h3>
+          <div className="flex flex-wrap gap-2 items-center">
+            <select value={filterCat} onChange={(e) => setFilterCat(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+              <option value="all">All categories</option>
+              {CATEGORIES.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+            </select>
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+              <option value="all">All statuses</option>
+              <option value="published">Published</option>
+              <option value="draft">Unpublished</option>
+              <option value="featured">Featured</option>
+            </select>
+          </div>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.length === 0 && <p className="text-sm text-muted-foreground">No products yet.</p>}
-          {items.map((p) => {
+          {visible.length === 0 && <p className="text-sm text-muted-foreground">No products yet.</p>}
+          {visible.map((p) => {
             const catName = CATEGORIES.find((c) => c.slug === p.category_slug)?.name || p.category_slug;
             return (
-              <div key={p.id} className="bg-card border border-border rounded-lg overflow-hidden">
+              <div key={p.id} className={`bg-card border border-border rounded-lg overflow-hidden ${!p.is_published ? "opacity-70" : ""}`}>
                 {p.image_url ? (
                   <img src={p.image_url} alt={p.name} className="w-full aspect-square object-cover" />
                 ) : (
@@ -202,16 +217,25 @@ const AdminProducts = () => {
                       <p className="text-xs text-accent font-semibold uppercase tracking-wide">{catName}</p>
                       <h4 className="font-semibold text-foreground">{p.name}</h4>
                     </div>
-                    <button onClick={() => toggleFeatured(p)} title="Toggle featured">
+                    <button onClick={() => toggleFeatured(p)} title={p.featured ? "Remove from featured" : "Feature in this category"}>
                       <Star className={`w-4 h-4 ${p.featured ? "fill-accent text-accent" : "text-muted-foreground"}`} />
                     </button>
                   </div>
+                  <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${p.is_published ? "bg-accent/15 text-accent" : "bg-muted text-muted-foreground"}`}>
+                    {p.is_published ? "Published" : "Unpublished"}
+                  </span>
                   {p.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
                   {p.moq && <p className="text-xs text-muted-foreground mt-1">MOQ: {p.moq}</p>}
-                  <button onClick={() => remove(p.id)} className="mt-3 flex items-center gap-1 text-xs text-red-600 hover:underline">
-                    <Trash2 className="w-3 h-3" /> Delete
-                  </button>
+                  <div className="mt-3 flex items-center gap-3">
+                    <button onClick={() => togglePublished(p)} className="flex items-center gap-1 text-xs font-semibold text-foreground hover:text-accent">
+                      {p.is_published ? <><EyeOff className="w-3 h-3" /> Unpublish</> : <><Eye className="w-3 h-3" /> Publish</>}
+                    </button>
+                    <button onClick={() => remove(p.id)} className="flex items-center gap-1 text-xs text-red-600 hover:underline">
+                      <Trash2 className="w-3 h-3" /> Delete
+                    </button>
+                  </div>
                 </div>
+
               </div>
             );
           })}

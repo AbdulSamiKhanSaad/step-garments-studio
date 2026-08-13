@@ -9,6 +9,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
+import CategoryPage from "./pages/CategoryPage";
 import Services from "./pages/Services";
 import Process from "./pages/Process";
 import Contact from "./pages/Contact";
@@ -35,6 +36,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/products" element={<Products />} />
+                <Route path="/products/:slug" element={<CategoryPage />} />
                 <Route path="/services" element={<Services />} />
                 <Route path="/process" element={<Process />} />
                 <Route path="/contact" element={<Contact />} />
