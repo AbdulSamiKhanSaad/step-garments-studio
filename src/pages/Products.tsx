@@ -22,22 +22,16 @@ const Products = () => {
   const [detail, setDetail] = useState<CatalogItem | null>(null);
 
   useEffect(() => {
-    supabase.from("products").select("*").order("sort_order", { ascending: true }).order("created_at", { ascending: false }).then(({ data }) => {
-      if (!data) return;
-      const mapped: CatalogItem[] = data.map((p: any) => ({
-        id: p.id,
-        category_slug: p.category_slug,
-        name: p.name,
-        description: p.description || "",
-        image: p.image_url || CATEGORY_FALLBACK[p.category_slug] || productTshirts,
-        gallery: p.image_url ? [p.image_url] : [CATEGORY_FALLBACK[p.category_slug] || productTshirts],
-        fabrics: p.fabrics || [],
-        moq: p.moq || "—",
-        featured: p.featured,
-        source: "admin",
-      }));
-      setDbItems(mapped);
-    });
+    supabase
+      .from("products")
+      .select("*")
+      .eq("is_published", true)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (!data) return;
+        setDbItems(data.map(mapDbProduct));
+      });
   }, []);
 
   const catalog = useMemo(() => {
