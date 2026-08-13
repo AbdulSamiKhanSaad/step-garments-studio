@@ -9,6 +9,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
+import CategoryPage from "./pages/CategoryPage";
 import Services from "./pages/Services";
 import Process from "./pages/Process";
 import Contact from "./pages/Contact";
