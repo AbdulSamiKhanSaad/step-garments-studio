@@ -38,6 +38,7 @@ interface Product {
   moq: string | null;
   fabrics: string[];
   featured: boolean;
+  is_published: boolean;
   sort_order: number;
   created_at: string;
 }
