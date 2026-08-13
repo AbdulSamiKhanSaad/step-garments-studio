@@ -259,6 +259,7 @@ export type Database = {
           featured: boolean
           id: string
           image_url: string | null
+          is_published: boolean
           moq: string | null
           name: string
           sort_order: number
@@ -272,6 +273,7 @@ export type Database = {
           featured?: boolean
           id?: string
           image_url?: string | null
+          is_published?: boolean
           moq?: string | null
           name: string
           sort_order?: number
@@ -285,6 +287,7 @@ export type Database = {
           featured?: boolean
           id?: string
           image_url?: string | null
+          is_published?: boolean
           moq?: string | null
           name?: string
           sort_order?: number
