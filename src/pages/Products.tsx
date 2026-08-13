@@ -90,18 +90,24 @@ const Products = () => {
             />
           </div>
           <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1" style={{ scrollbarWidth: "none" }}>
-            {[{ slug: "all", name: "All Products" }, ...CATEGORIES].map((c) => (
-              <button
+            <button
+              onClick={() => setActiveCategory("all")}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wide border transition-all ${
+                activeCategory === "all"
+                  ? "bg-accent text-accent-foreground border-accent shadow-md"
+                  : "bg-card text-foreground border-border hover:border-accent hover:text-accent"
+              }`}
+            >
+              All Products
+            </button>
+            {CATEGORIES.map((c) => (
+              <Link
                 key={c.slug}
-                onClick={() => setActiveCategory(c.slug)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wide border transition-all ${
-                  activeCategory === c.slug
-                    ? "bg-accent text-accent-foreground border-accent shadow-md"
-                    : "bg-card text-foreground border-border hover:border-accent hover:text-accent"
-                }`}
+                to={`/products/${c.slug}`}
+                className="flex-shrink-0 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wide border transition-all bg-card text-foreground border-border hover:border-accent hover:text-accent"
               >
                 {c.name}
-              </button>
+              </Link>
             ))}
           </div>
         </div>
@@ -113,9 +119,9 @@ const Products = () => {
           <div className="flex items-center justify-between mb-6">
             <p className="text-sm text-muted-foreground">
               Showing <span className="font-semibold text-foreground">{filtered.length}</span> product{filtered.length !== 1 && "s"}
-              {activeCategory !== "all" && <> in <span className="font-semibold text-foreground">{CATEGORIES.find(c => c.slug === activeCategory)?.name}</span></>}
             </p>
           </div>
+
 
           {filtered.length === 0 ? (
             <div className="text-center py-16">
