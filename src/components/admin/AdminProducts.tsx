@@ -47,6 +47,8 @@ const AdminProducts = () => {
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [filterCat, setFilterCat] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [form, setForm] = useState({
     category_slug: "tshirts",
     name: "",
