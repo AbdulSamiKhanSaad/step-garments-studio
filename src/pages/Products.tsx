@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import serviceFabric from "@/assets/service-fabric.jpg";
 import heroFactory from "@/assets/hero-factory.jpg";
-import { CATEGORIES, SEED, CATEGORY_FALLBACK, CatalogItem, mapDbProduct } from "@/data/catalog";
+import { CATEGORIES, SEED, CatalogItem, mapDbProduct } from "@/data/catalog";
 
 const Products = () => {
   const [quoteOpen, setQuoteOpen] = useState(false);

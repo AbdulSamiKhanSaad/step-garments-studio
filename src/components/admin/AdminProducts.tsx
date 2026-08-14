@@ -4,7 +4,7 @@ import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Plus, Star } from "lucide-react";
+import { Trash2, Plus, Star, Eye, EyeOff } from "lucide-react";
 
 const CATEGORIES = [
   { slug: "tshirts", name: "T-Shirts" },
@@ -47,6 +47,8 @@ const AdminProducts = () => {
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [filterCat, setFilterCat] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [form, setForm] = useState({
     category_slug: "tshirts",
     name: "",
@@ -127,9 +129,28 @@ const AdminProducts = () => {
   };
 
   const toggleFeatured = async (p: Product) => {
-    await supabase.from("products").update({ featured: !p.featured }).eq("id", p.id);
+    const { error } = await supabase.from("products").update({ featured: !p.featured }).eq("id", p.id);
+    if (error) toast({ title: "Update failed", description: error.message, variant: "destructive" });
     fetchProducts();
   };
+
+  const togglePublished = async (p: Product) => {
+    const { error } = await supabase.from("products").update({ is_published: !p.is_published }).eq("id", p.id);
+    if (error) {
+      toast({ title: "Update failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: p.is_published ? "Product unpublished" : "Product published" });
+    fetchProducts();
+  };
+
+  const visible = items.filter((p) => {
+    if (filterCat !== "all" && p.category_slug !== filterCat) return false;
+    if (filterStatus === "published" && !p.is_published) return false;
+    if (filterStatus === "draft" && p.is_published) return false;
+    if (filterStatus === "featured" && !p.featured) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-8">
