@@ -4,7 +4,7 @@ import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Plus, Star } from "lucide-react";
+import { Trash2, Plus, Star, Eye, EyeOff } from "lucide-react";
 
 const CATEGORIES = [
   { slug: "tshirts", name: "T-Shirts" },
