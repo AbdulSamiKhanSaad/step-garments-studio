@@ -127,9 +127,28 @@ const AdminProducts = () => {
   };
 
   const toggleFeatured = async (p: Product) => {
-    await supabase.from("products").update({ featured: !p.featured }).eq("id", p.id);
+    const { error } = await supabase.from("products").update({ featured: !p.featured }).eq("id", p.id);
+    if (error) toast({ title: "Update failed", description: error.message, variant: "destructive" });
     fetchProducts();
   };
+
+  const togglePublished = async (p: Product) => {
+    const { error } = await supabase.from("products").update({ is_published: !p.is_published }).eq("id", p.id);
+    if (error) {
+      toast({ title: "Update failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: p.is_published ? "Product unpublished" : "Product published" });
+    fetchProducts();
+  };
+
+  const visible = items.filter((p) => {
+    if (filterCat !== "all" && p.category_slug !== filterCat) return false;
+    if (filterStatus === "published" && !p.is_published) return false;
+    if (filterStatus === "draft" && p.is_published) return false;
+    if (filterStatus === "featured" && !p.featured) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-8">
