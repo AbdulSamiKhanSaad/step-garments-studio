@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .eq("user_id", userId)
       .eq("role", "admin")
       .maybeSingle();
-    setIsAdmin(!!data);
+    return !!data;
   };
 
   const fetchProfile = async (userId: string) => {
@@ -40,36 +40,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .select("full_name, email, phone, company")
       .eq("user_id", userId)
       .maybeSingle();
-    setProfile(data || null);
+    return data || null;
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    let active = true;
+
+    const hydrateSession = async (session: Session | null) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        setTimeout(() => {
-          checkAdmin(session.user.id);
-          fetchProfile(session.user.id);
-        }, 0);
+        const [admin, userProfile] = await Promise.all([
+          checkAdmin(session.user.id),
+          fetchProfile(session.user.id),
+        ]);
+        if (!active) return;
+        setIsAdmin(admin);
+        setProfile(userProfile);
       } else {
         setIsAdmin(false);
         setProfile(null);
       }
+      if (!active) return;
       setLoading(false);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setLoading(true);
+      setTimeout(() => void hydrateSession(session), 0);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdmin(session.user.id);
-        fetchProfile(session.user.id);
-      }
-      setLoading(false);
+      void hydrateSession(session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {

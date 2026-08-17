@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone, FlaskConical, FolderUp, ShoppingBag } from "lucide-react";
+import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone, FlaskConical, FolderUp, ShoppingBag, ShieldCheck, Wrench } from "lucide-react";
 import MaintenanceManager from "@/components/admin/MaintenanceManager";
 import AdminProducts from "@/components/admin/AdminProducts";
 
@@ -21,6 +21,8 @@ const adminNav = [
   { label: "Design Studio", path: "/admin/design", icon: Paintbrush },
   { label: "Factory", path: "/admin/factory", icon: Factory },
   { label: "Ticker Messages", path: "/admin/ticker", icon: Megaphone },
+  { label: "Maintenance", path: "/admin/maintenance", icon: Wrench },
+  { label: "Admin Access", path: "/admin/admins", icon: ShieldCheck },
   { label: "Settings", path: "/admin/settings", icon: Settings },
 ];
 
@@ -93,6 +95,8 @@ const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
     case "/admin/design": return <React.Suspense fallback={<p className="text-muted-foreground">Loading Design Studio...</p>}><DesignStudioLazy /></React.Suspense>;
     case "/admin/factory": return <React.Suspense fallback={<p className="text-muted-foreground">Loading...</p>}><FactoryShowcaseLazy /></React.Suspense>;
     case "/admin/ticker": return <AdminTickerMessages />;
+    case "/admin/maintenance": return <MaintenanceManager />;
+    case "/admin/admins": return <AdminAccess currentUserId={userId} />;
     case "/admin/settings": return <AdminSettings userId={userId} />;
     default: return <AdminDashboardOverview />;
   }
@@ -623,33 +627,123 @@ const AdminTickerMessages = () => {
   );
 };
 
-// Settings
-const AdminSettings = ({ userId }: { userId: string }) => {
+type AdminRoleRow = {
+  id: string;
+  user_id: string;
+  email: string;
+  full_name: string;
+};
+
+const AdminAccess = ({ currentUserId }: { currentUserId: string }) => {
   const [email, setEmail] = useState("");
+  const [admins, setAdmins] = useState<AdminRoleRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAdmins = async () => {
+    setLoading(true);
+    const { data: roles, error } = await supabase
+      .from("user_roles")
+      .select("id, user_id")
+      .eq("role", "admin");
+    if (error) {
+      toast({ title: "Could not load administrators", description: error.message, variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+    const userIds = (roles || []).map((role) => role.user_id);
+    const { data: profiles } = userIds.length
+      ? await supabase.from("profiles").select("user_id, email, full_name").in("user_id", userIds)
+      : { data: [] };
+    const profileMap = new Map((profiles || []).map((profile) => [profile.user_id, profile]));
+    setAdmins((roles || []).map((role) => {
+      const profile = profileMap.get(role.user_id);
+      return {
+        id: role.id,
+        user_id: role.user_id,
+        email: profile?.email || "Unknown email",
+        full_name: profile?.full_name || "Unnamed user",
+      };
+    }));
+    setLoading(false);
+  };
+
+  useEffect(() => { void fetchAdmins(); }, []);
 
   const inviteAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     const { data: profile } = await supabase.from("profiles").select("user_id").eq("email", email).maybeSingle();
     if (!profile) { toast({ title: "User not found", description: "They must sign up first.", variant: "destructive" }); return; }
+    const { data: existing } = await supabase.from("user_roles").select("id").eq("user_id", profile.user_id).eq("role", "admin").maybeSingle();
+    if (existing) { toast({ title: "Already an administrator" }); return; }
     const { error } = await supabase.from("user_roles").insert({ user_id: profile.user_id, role: "admin" });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Admin role granted!", description: `${email} is now an admin.` }); setEmail("");
+    toast({ title: "Admin role granted!", description: `${email} is now an admin.` });
+    setEmail("");
+    void fetchAdmins();
+  };
+
+  const revokeAdmin = async (role: AdminRoleRow) => {
+    if (role.user_id === currentUserId) return;
+    if (!confirm(`Remove admin access from ${role.email}?`)) return;
+    const { error } = await supabase.from("user_roles").delete().eq("id", role.id);
+    if (error) {
+      toast({ title: "Could not revoke access", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Admin access removed" });
+    void fetchAdmins();
   };
 
   return (
-    <div className="space-y-8">
-      <MaintenanceManager />
-
+    <div className="space-y-6">
       <div>
-        <h2 className="font-heading text-xl font-bold text-foreground mb-6">Admin Settings</h2>
-        <div className="bg-card border border-border rounded-lg p-6 max-w-lg">
-          <h3 className="font-heading font-bold text-foreground mb-4">Invite Admin</h3>
-          <p className="text-sm text-muted-foreground mb-4">Grant admin access to an existing user by their email address.</p>
-          <form onSubmit={inviteAdmin} className="flex gap-3">
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="user@email.com" className="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
-            <button type="submit" className="btn-primary text-sm py-2">Grant Admin</button>
-          </form>
+        <h2 className="font-heading text-xl font-bold text-foreground mb-1">Admin Access</h2>
+        <p className="text-sm text-muted-foreground">Grant or remove administrator access for registered users.</p>
+      </div>
+      <div className="bg-card border border-border rounded-lg p-6">
+        <h3 className="font-heading font-bold text-foreground mb-4">Add Administrator</h3>
+        <form onSubmit={inviteAdmin} className="flex flex-col sm:flex-row gap-3 max-w-xl">
+          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Registered user email" className="flex-1 h-10 rounded-md border border-input bg-background px-3 text-sm" />
+          <button type="submit" className="btn-primary text-sm py-2">Grant Admin</button>
+        </form>
+      </div>
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <h3 className="font-heading font-bold text-foreground">Current Administrators</h3>
         </div>
+        {loading ? <p className="p-4 text-sm text-muted-foreground">Loading administrators…</p> : (
+          <div className="divide-y divide-border">
+            {admins.map((admin) => (
+              <div key={admin.id} className="p-4 flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground truncate">{admin.full_name}</p>
+                  <p className="text-sm text-muted-foreground truncate">{admin.email}</p>
+                </div>
+                {admin.user_id === currentUserId ? (
+                  <span className="text-xs font-semibold text-accent">You</span>
+                ) : (
+                  <button onClick={() => revokeAdmin(admin)} className="text-sm font-medium text-destructive hover:underline">Remove</button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Settings
+const AdminSettings = ({ userId }: { userId: string }) => {
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="font-heading text-xl font-bold text-foreground mb-1">Admin Settings</h2>
+        <p className="text-sm text-muted-foreground">Website controls and administrator access are also available as dedicated sidebar pages.</p>
+      </div>
+      <MaintenanceManager />
+      <div>
+        <AdminAccess currentUserId={userId} />
       </div>
     </div>
   );
