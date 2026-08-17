@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Plus, Star, Eye, EyeOff } from "lucide-react";
+import { Trash2, Plus, Star, Eye, EyeOff, Upload } from "lucide-react";
 
 const CATEGORIES = [
   { slug: "tshirts", name: "T-Shirts" },
@@ -44,9 +44,11 @@ interface Product {
 }
 
 const AdminProducts = () => {
+  const catalogInputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [filterCat, setFilterCat] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [form, setForm] = useState({
@@ -72,6 +74,68 @@ const AdminProducts = () => {
   };
 
   useEffect(() => { fetchProducts(); }, []);
+
+  const parseCsvRow = (line: string) => {
+    const values: string[] = [];
+    let current = "";
+    let quoted = false;
+    for (let index = 0; index < line.length; index += 1) {
+      const character = line[index];
+      if (character === '"' && line[index + 1] === '"') {
+        current += '"';
+        index += 1;
+      } else if (character === '"') {
+        quoted = !quoted;
+      } else if (character === "," && !quoted) {
+        values.push(current.trim());
+        current = "";
+      } else {
+        current += character;
+      }
+    }
+    values.push(current.trim());
+    return values;
+  };
+
+  const importCatalog = async (file: File) => {
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const rows = text.split(/\r?\n/).filter((line) => line.trim());
+      if (rows.length < 2) throw new Error("The catalog file has no product rows.");
+      const headers = parseCsvRow(rows[0]).map((header) => header.toLowerCase());
+      const required = ["category_slug", "name"];
+      if (required.some((header) => !headers.includes(header))) {
+        throw new Error("CSV must include category_slug and name columns.");
+      }
+      const products = rows.slice(1).map((line) => {
+        const values = parseCsvRow(line);
+        const row = Object.fromEntries(headers.map((header, index) => [header, values[index] || ""]));
+        return {
+          category_slug: row.category_slug,
+          name: row.name,
+          description: row.description || "",
+          image_url: row.image_url || null,
+          moq: row.moq || null,
+          fabrics: row.fabrics ? row.fabrics.split("|").map((fabric) => fabric.trim()).filter(Boolean) : [],
+          featured: ["true", "yes", "1"].includes(row.featured?.toLowerCase()),
+          is_published: !["false", "no", "0"].includes(row.is_published?.toLowerCase()),
+          sort_order: Number.parseInt(row.sort_order || "0", 10) || 0,
+        };
+      }).filter((product) => product.category_slug && product.name);
+      if (!products.length) throw new Error("No valid products were found in the catalog.");
+      const { error } = await supabase.from("products").insert(products);
+      if (error) throw error;
+      toast({ title: "Catalog imported", description: `${products.length} products added.` });
+      await fetchProducts();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "The catalog could not be imported.";
+      toast({ title: "Catalog import failed", description: message, variant: "destructive" });
+    } finally {
+      setImporting(false);
+      if (catalogInputRef.current) catalogInputRef.current.value = "";
+    }
+  };
 
   const uploadImage = async (file: File) => {
     setUploading(true);
@@ -154,9 +218,27 @@ const AdminProducts = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="font-heading text-xl font-bold text-foreground mb-2">Products</h2>
-        <p className="text-sm text-muted-foreground">Add products to categories — they appear instantly on the public Products page.</p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <h2 className="font-heading text-xl font-bold text-foreground mb-2">Products & Catalog</h2>
+          <p className="text-sm text-muted-foreground">Add products individually or import a CSV catalog.</p>
+        </div>
+        <div>
+          <input
+            ref={catalogInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void importCatalog(file);
+            }}
+          />
+          <button type="button" onClick={() => catalogInputRef.current?.click()} disabled={importing} className="btn-primary text-sm disabled:opacity-50 flex items-center gap-2">
+            <Upload className="w-4 h-4" /> {importing ? "Importing…" : "Import CSV Catalog"}
+          </button>
+          <p className="text-xs text-muted-foreground mt-2 sm:text-right">Required columns: category_slug, name</p>
+        </div>
       </div>
 
       <form onSubmit={addProduct} className="bg-card border border-border rounded-lg p-6 space-y-4">
@@ -222,7 +304,7 @@ const AdminProducts = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {visible.length === 0 && <p className="text-sm text-muted-foreground">No products yet.</p>}
+          {visible.length === 0 && <p className="text-sm text-muted-foreground">No database products yet. Add one above or import a CSV catalog.</p>}
           {visible.map((p) => {
             const catName = CATEGORIES.find((c) => c.slug === p.category_slug)?.name || p.category_slug;
             return (
