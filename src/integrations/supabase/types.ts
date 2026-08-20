@@ -53,35 +53,107 @@ export type Database = {
       invoices: {
         Row: {
           amount: number
+          bank_details: string | null
+          bill_to_address: string | null
+          bill_to_company: string | null
+          bill_to_email: string | null
+          bill_to_name: string | null
+          bill_to_tax_id: string | null
+          country_of_origin: string | null
           created_at: string
+          currency: string
+          discount: number
           due_date: string | null
           file_url: string | null
+          hs_code: string | null
           id: string
+          incoterms: string | null
           invoice_number: string
+          issue_date: string
+          items: Json
+          notes: string | null
           order_id: string
+          payment_terms: string | null
+          po_number: string | null
+          ref_no: number
+          ship_to_address: string | null
+          shipping_cost: number
           status: string
+          subtotal: number
+          tax_amount: number
+          tax_label: string | null
+          tax_rate: number
+          terms: string | null
           user_id: string
         }
         Insert: {
           amount?: number
+          bank_details?: string | null
+          bill_to_address?: string | null
+          bill_to_company?: string | null
+          bill_to_email?: string | null
+          bill_to_name?: string | null
+          bill_to_tax_id?: string | null
+          country_of_origin?: string | null
           created_at?: string
+          currency?: string
+          discount?: number
           due_date?: string | null
           file_url?: string | null
+          hs_code?: string | null
           id?: string
+          incoterms?: string | null
           invoice_number?: string
+          issue_date?: string
+          items?: Json
+          notes?: string | null
           order_id: string
+          payment_terms?: string | null
+          po_number?: string | null
+          ref_no?: number
+          ship_to_address?: string | null
+          shipping_cost?: number
           status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_label?: string | null
+          tax_rate?: number
+          terms?: string | null
           user_id: string
         }
         Update: {
           amount?: number
+          bank_details?: string | null
+          bill_to_address?: string | null
+          bill_to_company?: string | null
+          bill_to_email?: string | null
+          bill_to_name?: string | null
+          bill_to_tax_id?: string | null
+          country_of_origin?: string | null
           created_at?: string
+          currency?: string
+          discount?: number
           due_date?: string | null
           file_url?: string | null
+          hs_code?: string | null
           id?: string
+          incoterms?: string | null
           invoice_number?: string
+          issue_date?: string
+          items?: Json
+          notes?: string | null
           order_id?: string
+          payment_terms?: string | null
+          po_number?: string | null
+          ref_no?: number
+          ship_to_address?: string | null
+          shipping_cost?: number
           status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_label?: string | null
+          tax_rate?: number
+          terms?: string | null
           user_id?: string
         }
         Relationships: [
@@ -168,6 +240,7 @@ export type Database = {
           product_type: string
           quantity: string | null
           quote_id: string | null
+          ref_no: number
           status: string
           total_amount: number | null
           tracking_number: string | null
@@ -182,6 +255,7 @@ export type Database = {
           product_type?: string
           quantity?: string | null
           quote_id?: string | null
+          ref_no?: number
           status?: string
           total_amount?: number | null
           tracking_number?: string | null
@@ -196,6 +270,7 @@ export type Database = {
           product_type?: string
           quantity?: string | null
           quote_id?: string | null
+          ref_no?: number
           status?: string
           total_amount?: number | null
           tracking_number?: string | null
