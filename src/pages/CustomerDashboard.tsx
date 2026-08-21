@@ -3,7 +3,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { LayoutDashboard, FileText, Package, MessageSquare, Upload, Receipt, User, LogOut, Menu, X, Paintbrush, Factory, FlaskConical } from "lucide-react";
+import { LayoutDashboard, FileText, Package, MessageSquare, Upload, Receipt, User, LogOut, Menu, X, Paintbrush, Factory, FlaskConical, Download } from "lucide-react";
+import { generateInvoicePdf, parseItems } from "@/lib/invoicePdf";
 
 const customerNav = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -415,32 +416,81 @@ const FilesPage = ({ userId }: { userId: string }) => {
 // Invoices
 const InvoicesPage = ({ userId }: { userId: string }) => {
   const [invoices, setInvoices] = useState<any[]>([]);
+  const [openId, setOpenId] = useState<string | null>(null);
   useEffect(() => {
     supabase.from("invoices").select("*").eq("user_id", userId).order("created_at", { ascending: false }).then(({ data }) => setInvoices(data || []));
   }, [userId]);
 
-  const statusColor: Record<string, string> = { unpaid: "bg-red-100 text-red-700", paid: "bg-green-100 text-green-700", overdue: "bg-orange-100 text-orange-700" };
+  const statusColor: Record<string, string> = { unpaid: "bg-red-100 text-red-700", paid: "bg-green-100 text-green-700", overdue: "bg-orange-100 text-orange-700", cancelled: "bg-muted text-muted-foreground" };
 
   return (
     <div>
       <h2 className="font-heading text-xl font-bold text-foreground mb-6">Invoices</h2>
       <div className="space-y-3">
-        {invoices.length === 0 ? <p className="text-muted-foreground text-sm">No invoices yet.</p> : invoices.map((inv) => (
-          <div key={inv.id} className="bg-card border border-border rounded-lg p-4 flex justify-between items-center">
-            <div>
-              <p className="font-bold text-foreground">{inv.invoice_number}</p>
-              <p className="text-sm text-muted-foreground">${inv.amount.toFixed(2)} • Due: {inv.due_date ? new Date(inv.due_date).toLocaleDateString() : "N/A"}</p>
+        {invoices.length === 0 ? <p className="text-muted-foreground text-sm">No invoices yet.</p> : invoices.map((inv) => {
+          const items = parseItems(inv.items);
+          const currency = inv.currency || "USD";
+          const open = openId === inv.id;
+          return (
+            <div key={inv.id} className="bg-card border border-border rounded-lg p-4">
+              <div className="flex flex-wrap justify-between items-center gap-3">
+                <div>
+                  <p className="font-bold text-foreground">Invoice #{inv.ref_no ?? "—"} <span className="text-xs font-normal text-muted-foreground">{inv.invoice_number}</span></p>
+                  <p className="text-sm text-muted-foreground">{currency} {Number(inv.amount || 0).toFixed(2)} • Issued: {inv.issue_date || "—"} • Due: {inv.due_date ? new Date(inv.due_date).toLocaleDateString() : "N/A"}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor[inv.status] || ""}`}>{inv.status}</span>
+                  <button onClick={() => setOpenId(open ? null : inv.id)} className="text-sm font-medium text-foreground hover:underline">{open ? "Hide" : "View"}</button>
+                  <button onClick={() => generateInvoicePdf(inv)} className="inline-flex items-center gap-1 h-8 px-3 rounded-md bg-accent text-accent-foreground text-xs font-semibold">
+                    <Download className="w-3.5 h-3.5" />PDF
+                  </button>
+                </div>
+              </div>
+              {open && (
+                <div className="mt-4 border-t border-border pt-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-muted-foreground mb-4">
+                    <p>Billed to: <span className="text-foreground">{inv.bill_to_company || inv.bill_to_name || "—"}</span></p>
+                    <p>PO number: <span className="text-foreground">{inv.po_number || "—"}</span></p>
+                    <p>Incoterms: <span className="text-foreground">{inv.incoterms || "—"}</span></p>
+                    <p>Country of origin: <span className="text-foreground">{inv.country_of_origin || "—"}</span></p>
+                    <p>Payment terms: <span className="text-foreground">{inv.payment_terms || "—"}</span></p>
+                    <p>{inv.tax_label || "Tax"}: <span className="text-foreground">{Number(inv.tax_rate || 0)}%</span></p>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead className="bg-muted text-muted-foreground"><tr><th className="text-left p-2">Description</th><th className="text-left p-2">HS Code</th><th className="text-right p-2">Qty</th><th className="text-right p-2">Unit Price</th><th className="text-right p-2">Amount</th></tr></thead>
+                      <tbody>
+                        {items.map((item, i) => (
+                          <tr key={i} className="border-t border-border">
+                            <td className="p-2 text-foreground">{item.description}</td>
+                            <td className="p-2 text-muted-foreground">{item.hs_code || "—"}</td>
+                            <td className="p-2 text-right">{item.quantity} {item.unit}</td>
+                            <td className="p-2 text-right">{currency} {item.unit_price.toFixed(2)}</td>
+                            <td className="p-2 text-right">{currency} {(item.quantity * item.unit_price).toFixed(2)}</td>
+                          </tr>
+                        ))}
+                        {items.length === 0 && <tr><td colSpan={5} className="p-3 text-center text-muted-foreground">No line items.</td></tr>}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="mt-3 space-y-1 text-right text-muted-foreground">
+                    <p>Subtotal: <span className="text-foreground">{currency} {Number(inv.subtotal || 0).toFixed(2)}</span></p>
+                    {Number(inv.discount) > 0 && <p>Discount: <span className="text-foreground">- {currency} {Number(inv.discount).toFixed(2)}</span></p>}
+                    <p>{inv.tax_label || "Tax"}: <span className="text-foreground">{currency} {Number(inv.tax_amount || 0).toFixed(2)}</span></p>
+                    {Number(inv.shipping_cost) > 0 && <p>Freight: <span className="text-foreground">{currency} {Number(inv.shipping_cost).toFixed(2)}</span></p>}
+                    <p className="font-bold text-foreground">Total due: {currency} {Number(inv.amount || 0).toFixed(2)}</p>
+                  </div>
+                  {inv.notes && <p className="mt-3 text-muted-foreground">Notes: {inv.notes}</p>}
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-3">
-              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor[inv.status] || ""}`}>{inv.status}</span>
-              {inv.file_url && <a href={inv.file_url} target="_blank" rel="noopener noreferrer" className="text-accent text-sm font-medium hover:underline">Download</a>}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 };
+
 
 // Profile
 const ProfilePage = ({ userId }: { userId: string }) => {
