@@ -3,7 +3,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { LayoutDashboard, FileText, Package, MessageSquare, Upload, Receipt, User, LogOut, Menu, X, Paintbrush, Factory, FlaskConical } from "lucide-react";
+import { LayoutDashboard, FileText, Package, MessageSquare, Upload, Receipt, User, LogOut, Menu, X, Paintbrush, Factory, FlaskConical, Download } from "lucide-react";
+import { generateInvoicePdf, parseItems } from "@/lib/invoicePdf";
 
 const customerNav = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
