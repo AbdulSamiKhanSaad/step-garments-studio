@@ -497,32 +497,8 @@ const AdminMessages = ({ userId }: { userId: string }) => {
   );
 };
 
-// Invoices
-const AdminInvoices = () => {
-  const [invoices, setInvoices] = useState<any[]>([]);
-  useEffect(() => { supabase.from("invoices").select("*").order("created_at", { ascending: false }).then(({ data }) => setInvoices(data || [])); }, []);
+// Invoices are managed in src/components/admin/AdminInvoices.tsx
 
-  return (
-    <div>
-      <h2 className="font-heading text-xl font-bold text-foreground mb-6">All Invoices</h2>
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-muted"><tr><th className="text-left p-3">Invoice #</th><th className="text-left p-3">Amount</th><th className="text-left p-3">Status</th><th className="text-left p-3">Due Date</th></tr></thead>
-          <tbody>
-            {invoices.map((inv) => (
-              <tr key={inv.id} className="border-t border-border">
-                <td className="p-3 font-medium">{inv.invoice_number}</td>
-                <td className="p-3">${inv.amount}</td>
-                <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${inv.status === "paid" ? "bg-green-100 text-green-700" : inv.status === "overdue" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}>{inv.status}</span></td>
-                <td className="p-3">{inv.due_date || "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
 
 // Contacts
 const AdminContacts = () => {
