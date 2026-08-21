@@ -368,16 +368,27 @@ const AdminQuotes = () => {
 // Orders
 const AdminOrders = ({ userId }: { userId: string }) => {
   const [orders, setOrders] = useState<any[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ user_id: "", product_type: "", quantity: "", total_amount: "" });
+  const [form, setForm] = useState({ customer: "", product_type: "", quantity: "", total_amount: "", notes: "" });
   const fetchOrders = async () => { const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false }); setOrders(data || []); };
-  useEffect(() => { fetchOrders(); }, []);
+  useEffect(() => {
+    fetchOrders();
+    supabase.from("profiles").select("user_id, full_name, email, company").order("full_name").then(({ data }) => setClients(data || []));
+  }, []);
 
   const createOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from("orders").insert({ user_id: form.user_id, product_type: form.product_type, quantity: form.quantity, total_amount: parseFloat(form.total_amount) || 0 });
+    // "customer" holds either the numeric client number shown in the list or the client's email
+    const value = form.customer.trim().toLowerCase();
+    const byNumber = clients[Number(value) - 1];
+    const match = /^\d+$/.test(value) ? byNumber : clients.find((c) => (c.email || "").toLowerCase() === value || (c.full_name || "").toLowerCase() === value);
+    if (!match) { toast({ title: "Customer not found", description: "Pick a customer from the list.", variant: "destructive" }); return; }
+    const { error } = await supabase.from("orders").insert({ user_id: match.user_id, product_type: form.product_type, quantity: form.quantity, total_amount: parseFloat(form.total_amount) || 0, notes: form.notes });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Order created!" }); setShowForm(false); fetchOrders();
+    toast({ title: "Order created!" });
+    setForm({ customer: "", product_type: "", quantity: "", total_amount: "", notes: "" });
+    setShowForm(false); fetchOrders();
   };
 
   const updateStatus = async (id: string, status: string) => {
@@ -386,6 +397,10 @@ const AdminOrders = ({ userId }: { userId: string }) => {
   };
 
   const statuses = ["pending", "sampling", "production", "quality_check", "shipped", "delivered"];
+  const clientName = (id: string) => {
+    const c = clients.find((cl) => cl.user_id === id);
+    return c ? c.full_name || c.email : "—";
+  };
 
   return (
     <div>
@@ -394,12 +409,22 @@ const AdminOrders = ({ userId }: { userId: string }) => {
         <button onClick={() => setShowForm(!showForm)} className="btn-primary text-sm py-2">{showForm ? "Cancel" : "Create Order"}</button>
       </div>
       {showForm && (
-        <form onSubmit={createOrder} className="bg-card border border-border rounded-lg p-6 mb-6 grid grid-cols-2 gap-4">
-          <div><label className="text-sm font-medium">Customer User ID</label><input value={form.user_id} onChange={(e) => setForm({ ...form, user_id: e.target.value })} required className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" /></div>
+        <form onSubmit={createOrder} className="bg-card border border-border rounded-lg p-6 mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label className="text-sm font-medium">Customer</label>
+            <select value={form.customer} onChange={(e) => setForm({ ...form, customer: e.target.value })} required className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm">
+              <option value="">Select customer</option>
+              {clients.map((c, index) => (
+                <option key={c.user_id} value={String(index + 1)}>#{index + 1} — {c.full_name || c.email}{c.company ? ` (${c.company})` : ""}</option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">Customers are listed by number and name — no database IDs needed.</p>
+          </div>
           <div><label className="text-sm font-medium">Product Type</label><input value={form.product_type} onChange={(e) => setForm({ ...form, product_type: e.target.value })} required className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" /></div>
           <div><label className="text-sm font-medium">Quantity</label><input value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" /></div>
           <div><label className="text-sm font-medium">Total Amount</label><input value={form.total_amount} onChange={(e) => setForm({ ...form, total_amount: e.target.value })} type="number" className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" /></div>
-          <div className="col-span-2"><button type="submit" className="btn-primary text-sm py-2">Create</button></div>
+          <div><label className="text-sm font-medium">Notes</label><input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm" /></div>
+          <div className="md:col-span-2"><button type="submit" className="btn-primary text-sm py-2">Create</button></div>
         </form>
       )}
       <div className="space-y-4">
@@ -407,8 +432,8 @@ const AdminOrders = ({ userId }: { userId: string }) => {
           <div key={o.id} className="bg-card border border-border rounded-lg p-5">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <p className="font-bold text-foreground">{o.order_number}</p>
-                <p className="text-sm text-muted-foreground">{o.product_type} • {o.quantity} • ${o.total_amount}</p>
+                <p className="font-bold text-foreground">Order #{o.ref_no ?? "—"} <span className="text-xs font-normal text-muted-foreground">{o.order_number}</span></p>
+                <p className="text-sm text-muted-foreground">{clientName(o.user_id)} • {o.product_type} • {o.quantity} • ${o.total_amount}</p>
               </div>
               <select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className="h-8 rounded-md border border-input bg-background px-2 text-xs font-medium">
                 {statuses.map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
