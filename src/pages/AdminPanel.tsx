@@ -6,6 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone, FlaskConical, FolderUp, ShoppingBag, ShieldCheck, Wrench } from "lucide-react";
 import MaintenanceManager from "@/components/admin/MaintenanceManager";
 import AdminProducts from "@/components/admin/AdminProducts";
+import AdminInvoices from "@/components/admin/AdminInvoices";
 
 const adminNav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
