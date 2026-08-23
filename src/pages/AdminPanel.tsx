@@ -3,10 +3,11 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone, FlaskConical, FolderUp, ShoppingBag, ShieldCheck, Wrench } from "lucide-react";
+import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone, FlaskConical, FolderUp, ShoppingBag, ShieldCheck, Wrench, Calculator } from "lucide-react";
 import MaintenanceManager from "@/components/admin/MaintenanceManager";
 import AdminProducts from "@/components/admin/AdminProducts";
 import AdminInvoices from "@/components/admin/AdminInvoices";
+import AdminCostCalculator from "@/components/admin/AdminCostCalculator";
 
 const adminNav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
@@ -18,6 +19,7 @@ const adminNav = [
   { label: "Tech Packs", path: "/admin/techpacks", icon: FolderUp },
   { label: "Messages", path: "/admin/messages", icon: MessageSquare },
   { label: "Invoices", path: "/admin/invoices", icon: Receipt },
+  { label: "Price Calculator", path: "/admin/pricing", icon: Calculator },
   { label: "Contact Forms", path: "/admin/contacts", icon: Mail },
   { label: "Design Studio", path: "/admin/design", icon: Paintbrush },
   { label: "Factory", path: "/admin/factory", icon: Factory },
@@ -92,6 +94,7 @@ const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
     case "/admin/techpacks": return <AdminTechPacks />;
     case "/admin/messages": return <AdminMessages userId={userId} />;
     case "/admin/invoices": return <AdminInvoices />;
+    case "/admin/pricing": return <AdminCostCalculator />;
     case "/admin/contacts": return <AdminContacts />;
     case "/admin/design": return <React.Suspense fallback={<p className="text-muted-foreground">Loading Design Studio...</p>}><DesignStudioLazy /></React.Suspense>;
     case "/admin/factory": return <React.Suspense fallback={<p className="text-muted-foreground">Loading...</p>}><FactoryShowcaseLazy /></React.Suspense>;
