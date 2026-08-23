@@ -94,6 +94,7 @@ const AdminContent = ({ page, userId }: { page: string; userId: string }) => {
     case "/admin/techpacks": return <AdminTechPacks />;
     case "/admin/messages": return <AdminMessages userId={userId} />;
     case "/admin/invoices": return <AdminInvoices />;
+    case "/admin/pricing": return <AdminCostCalculator />;
     case "/admin/contacts": return <AdminContacts />;
     case "/admin/design": return <React.Suspense fallback={<p className="text-muted-foreground">Loading Design Studio...</p>}><DesignStudioLazy /></React.Suspense>;
     case "/admin/factory": return <React.Suspense fallback={<p className="text-muted-foreground">Loading...</p>}><FactoryShowcaseLazy /></React.Suspense>;
