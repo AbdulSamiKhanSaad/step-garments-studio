@@ -3,10 +3,11 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone, FlaskConical, FolderUp, ShoppingBag, ShieldCheck, Wrench } from "lucide-react";
+import { LayoutDashboard, FileText, Package, MessageSquare, Users, Receipt, Settings, LogOut, Menu, X, Mail, Paintbrush, Factory, Megaphone, FlaskConical, FolderUp, ShoppingBag, ShieldCheck, Wrench, Calculator } from "lucide-react";
 import MaintenanceManager from "@/components/admin/MaintenanceManager";
 import AdminProducts from "@/components/admin/AdminProducts";
 import AdminInvoices from "@/components/admin/AdminInvoices";
+import AdminCostCalculator from "@/components/admin/AdminCostCalculator";
 
 const adminNav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
