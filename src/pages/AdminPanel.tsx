@@ -19,6 +19,7 @@ const adminNav = [
   { label: "Tech Packs", path: "/admin/techpacks", icon: FolderUp },
   { label: "Messages", path: "/admin/messages", icon: MessageSquare },
   { label: "Invoices", path: "/admin/invoices", icon: Receipt },
+  { label: "Price Calculator", path: "/admin/pricing", icon: Calculator },
   { label: "Contact Forms", path: "/admin/contacts", icon: Mail },
   { label: "Design Studio", path: "/admin/design", icon: Paintbrush },
   { label: "Factory", path: "/admin/factory", icon: Factory },
